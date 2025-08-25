@@ -1,8 +1,22 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
+import { Logger } from 'nestjs-pino';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  await app.listen(3000);
+
+  // ✅ Enable CORS with default or custom options
+  app.enableCors({
+    origin: process.env.CORS_ORIGIN?.split(',') || '*', // Allow all or comma-separated origins from env
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
+
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  app.useLogger(app.get(Logger));
+
+  await app.listen(process.env.port ?? 4000);
 }
 bootstrap();
