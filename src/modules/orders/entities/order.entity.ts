@@ -9,9 +9,9 @@ import {
   OneToMany,
   OneToOne,
 } from 'typeorm';
-import { OrderDetails } from './orderDetails.entity';
 import { Address } from 'src/modules/users/entities/address.entity';
 import { Payment } from './payment.entity';
+import { OrderItem } from './orderItem.entity';
 
 export enum OrderStatus {
   PENDING = 'pending',
@@ -54,9 +54,9 @@ export class Order {
   @Column()
   total: number;
 
-  @OneToMany(() => OrderDetails, (commandDetail) => commandDetail.order)
+  @OneToMany(() => OrderItem, (item) => item.order)
   @JoinColumn()
-  details: OrderDetails[];
+  details: OrderItem[];
 
   @ManyToOne(() => Address)
   @JoinColumn()

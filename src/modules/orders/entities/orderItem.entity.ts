@@ -10,7 +10,7 @@ import { Order } from './order.entity';
 import { Variant } from 'src/modules/products/entities/variant.entity';
 
 @Entity()
-export class OrderDetails {
+export class OrderItem {
   @PrimaryGeneratedColumn('uuid')
   id?: string;
 
