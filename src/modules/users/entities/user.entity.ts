@@ -9,6 +9,7 @@ import {
 import { Address } from './address.entity';
 import { Order } from 'src/modules/orders/entities/order.entity';
 import { Review } from 'src/modules/products/entities/review.entity';
+import { StockMovement } from 'src/modules/stock-movements/entities/stock-movement.entity';
 
 @Entity()
 export class User {
@@ -25,10 +26,10 @@ export class User {
   cin: string;
 
   @Column({ nullable: true })
-  nom: string;
+  firstName: string;
 
   @Column({ nullable: true })
-  prenom: string;
+  lastName: string;
 
   @Column({ nullable: true })
   tel: number;
@@ -46,7 +47,7 @@ export class User {
   status: string;
 
   @Column({ nullable: true })
-  date_inscription: Date;
+  created_at: Date;
 
   @OneToMany(() => Address, (address) => address.user, { onDelete: 'CASCADE' })
   @JoinColumn()

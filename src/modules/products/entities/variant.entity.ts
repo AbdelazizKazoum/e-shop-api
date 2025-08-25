@@ -9,6 +9,10 @@ import {
   OneToOne,
 } from 'typeorm';
 import { Product } from './product.entity';
+import { StockMovement } from 'src/modules/stock-movements/entities/stock-movement.entity';
+import { SupplyOrderItem } from 'src/modules/supply-orders/entities/supplyOrderItem.entity';
+import { Stock } from './stock.entity';
+import { Image } from './image.entity';
 
 @Entity()
 export class Variant {
@@ -31,21 +35,21 @@ export class Variant {
   @JoinColumn()
   product: Product;
 
-  @OneToMany(() => Images, (img) => img.variant, {
+  @OneToMany(() => Image, (img) => img.variant, {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  images: Images[];
+  images: Image[];
 
   @OneToMany(() => StockMovement, (movement) => movement.productDetail)
   @JoinColumn()
   movements: StockMovement[];
 
-  @OneToMany(() => SupplierOrderItem, (orderItem) => orderItem.detail_product)
+  @OneToMany(() => SupplyOrderItem, (orderItem) => orderItem.variant)
   @JoinColumn()
-  orderItems: SupplierOrderItem[];
+  orderItems: SupplyOrderItem[];
 
-  @OneToOne(() => Stock, (stock) => stock.productDetail)
+  @OneToOne(() => Stock, (stock) => stock.variant)
   @JoinColumn()
   stock: Stock;
 }

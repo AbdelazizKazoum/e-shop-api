@@ -9,7 +9,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Product } from './product.entity';
-import { Users } from './users.entity';
+import { User } from 'src/modules/users/entities/user.entity';
 
 @Entity('reviews')
 export class Review {
@@ -19,8 +19,8 @@ export class Review {
   @Column({ type: 'text' })
   title: string;
 
-  @ManyToOne(() => Users, (user) => user.reviews, { onDelete: 'CASCADE' })
-  user: Users;
+  @ManyToOne(() => User, (user) => user.reviews, { onDelete: 'CASCADE' })
+  user: User;
 
   @ManyToOne(() => Product, (product) => product.reviews)
   @JoinColumn()

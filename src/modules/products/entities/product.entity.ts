@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { Category } from './category.entity';
 import { Variant } from './variant.entity';
+import { Review } from './review.entity';
 
 @Entity()
 export class Product {

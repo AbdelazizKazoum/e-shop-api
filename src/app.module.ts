@@ -12,7 +12,17 @@ import { SuppliersModule } from './modules/suppliers/suppliers.module';
 import { SupplyOrdersModule } from './modules/supply-orders/supply-orders.module';
 
 @Module({
-  imports: [CoreModule, SharedModule, AuthModule, ProductsModule, OrdersModule, UsersModule, StockMovementsModule, SuppliersModule, SupplyOrdersModule],
+  imports: [
+    CoreModule,
+    SharedModule,
+    AuthModule,
+    ProductsModule,
+    OrdersModule,
+    UsersModule,
+    StockMovementsModule,
+    SuppliersModule,
+    SupplyOrdersModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

@@ -7,11 +7,14 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Variant } from 'src/modules/products/entities/variant.entity';
+import { User } from 'src/modules/users/entities/user.entity';
+import { Supplier } from 'src/modules/suppliers/entities/supplier.entity';
+import { SupplyOrder } from 'src/modules/supply-orders/entities/supply-order.entity';
 import {
   StockMovementReason,
   StockMovementType,
-} from 'src/types/stock-movement-type.enum';
-import { Variant } from 'src/modules/products/entities/variant.entity';
+} from '../types/stock-movement-type.enum';
 
 @Entity()
 export class StockMovement {
@@ -46,11 +49,11 @@ export class StockMovement {
   })
   supplier?: Supplier | null; // Allowing null explicitly here
 
-  @ManyToOne(() => SupplierOrder, { nullable: true })
-  supplierOrder?: SupplierOrder | null;
+  @ManyToOne(() => SupplyOrder, { nullable: true })
+  supplierOrder?: SupplyOrder | null;
 
-  @ManyToOne(() => Users, { nullable: true })
-  user: Users;
+  @ManyToOne(() => User, { nullable: true })
+  user: User;
 
   @CreateDateColumn()
   createdAt: Date;
