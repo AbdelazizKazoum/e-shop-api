@@ -70,6 +70,7 @@ export class ProductsService {
     variants: CreateVariantDto[],
     files: MulterFile[],
   ) {
+    console.log('🚀 ~ ProductsService ~ createVariants ~ files:', files);
     const product = await this.productRepository.findOne({ id: productId });
     if (!product) {
       throw new NotFoundException('Product not found');
@@ -81,7 +82,6 @@ export class ProductsService {
 
     try {
       let fileIndex = 0;
-
       for (let i = 0; i < variants.length; i++) {
         const variantData = variants[i];
 
@@ -94,15 +94,9 @@ export class ProductsService {
         });
         const savedVariant = await queryRunner.manager.save('Variant', variant);
 
-        // Attach the same number of files as were sent for this variant
-        const variantImageCount = variantData.images?.length || 0;
-        const variantFiles = files.slice(
-          fileIndex,
-          fileIndex + variantImageCount,
-        );
-        fileIndex += variantImageCount;
-
-        for (const file of variantFiles) {
+        // Assign one image per variant
+        const file = files[i];
+        if (file) {
           const key = `products/variants/${Date.now()}-${file.originalname}`;
           const imagePath = await this.r2Service.uploadFile(file, key);
 
@@ -110,7 +104,6 @@ export class ProductsService {
             image: imagePath,
             variant: savedVariant,
           });
-
           await queryRunner.manager.save('Image', imageEntity);
         }
       }
