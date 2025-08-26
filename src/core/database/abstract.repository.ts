@@ -46,4 +46,8 @@ export abstract class AbstractRepository<T extends AbstractEntity<T>> {
       throw new NotFoundException('Entity not found for deletion.');
     }
   }
+
+  async findAndCountWithPagination(options: any): Promise<[T[], number]> {
+    return this.entityRepository.findAndCount(options);
+  }
 }

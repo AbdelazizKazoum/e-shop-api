@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   Injectable,
   InternalServerErrorException,
@@ -45,9 +46,8 @@ export class ProductsService {
       id: '1', //createProductDto.categoryId,
     });
     if (!category) {
-      throw new Error('Category not found');
+      throw new NotFoundException('Category not found');
     }
-    console.log('🚀 ~ ProductsService ~ create ~ category:', category);
 
     try {
       const productData = {
@@ -71,6 +71,7 @@ export class ProductsService {
     files: MulterFile[],
   ) {
     console.log('🚀 ~ ProductsService ~ createVariants ~ files:', files);
+
     const product = await this.productRepository.findOne({ id: productId });
     if (!product) {
       throw new NotFoundException('Product not found');
@@ -81,11 +82,10 @@ export class ProductsService {
     await queryRunner.startTransaction();
 
     try {
-      let fileIndex = 0;
       for (let i = 0; i < variants.length; i++) {
         const variantData = variants[i];
 
-        // Create variant
+        // Create variant entity
         const variant = queryRunner.manager.create('Variant', {
           color: variantData.color,
           size: variantData.size,
@@ -94,9 +94,12 @@ export class ProductsService {
         });
         const savedVariant = await queryRunner.manager.save('Variant', variant);
 
-        // Assign one image per variant
-        const file = files[i];
-        if (file) {
+        // ✅ Find files belonging to this variant using JSON mapping
+        const variantFiles = files.filter((file) =>
+          variantData.images.includes(file.originalname),
+        );
+
+        for (const file of variantFiles) {
           const key = `products/variants/${Date.now()}-${file.originalname}`;
           const imagePath = await this.r2Service.uploadFile(file, key);
 
@@ -117,5 +120,135 @@ export class ProductsService {
     } finally {
       await queryRunner.release();
     }
+  }
+  async getAllProductsFilteredAndPaginated(
+    page: number = 1,
+    limit: number = 10,
+    filters: {
+      name?: string;
+      brand?: string;
+      gender?: string;
+      rating?: number;
+      minPrice?: number;
+      maxPrice?: number;
+      startDate?: string;
+      endDate?: string;
+    },
+  ): Promise<{
+    data: Partial<Product>[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
+    try {
+      const query = this.productRepository['productRepository'] // underlying TypeORM repo
+        .createQueryBuilder('product')
+        .leftJoinAndSelect('product.category', 'category')
+        .select([
+          'product.id',
+          'product.name',
+          'product.brand',
+          'product.price',
+          'product.gender',
+          'product.newPrice',
+          'product.quantity',
+          'product.image',
+          'product.rating',
+          'product.reviewCount',
+          'product.trending',
+          'product.createAt',
+          'product.status',
+          'category.id',
+          'category.displayText',
+        ]);
+
+      // Apply filters dynamically
+      if (filters.name) {
+        query.andWhere('LOWER(product.name) LIKE :name', {
+          name: `%${filters.name.toLowerCase()}%`,
+        });
+      }
+
+      if (filters.brand) {
+        query.andWhere('LOWER(product.brand) LIKE :brand', {
+          brand: `%${filters.brand.toLowerCase()}%`,
+        });
+      }
+
+      if (filters.gender) {
+        query.andWhere('product.gender = :gender', { gender: filters.gender });
+      }
+
+      if (filters.rating) {
+        query.andWhere('product.rating >= :rating', { rating: filters.rating });
+      }
+
+      if (filters.minPrice) {
+        query.andWhere('product.price >= :minPrice', {
+          minPrice: filters.minPrice,
+        });
+      }
+
+      if (filters.maxPrice) {
+        query.andWhere('product.price <= :maxPrice', {
+          maxPrice: filters.maxPrice,
+        });
+      }
+
+      if (filters.startDate) {
+        query.andWhere('product.createAt >= :startDate', {
+          startDate: filters.startDate,
+        });
+      }
+
+      if (filters.endDate) {
+        query.andWhere('product.createAt <= :endDate', {
+          endDate: filters.endDate,
+        });
+      }
+
+      // Pagination
+      query
+        .skip((page - 1) * limit)
+        .take(limit)
+        .orderBy('product.createAt', 'DESC');
+
+      const [products, total] = await query.getManyAndCount();
+
+      const formatted = products.map((p) => ({
+        ...p,
+        category: p.category
+          ? {
+              id: p.category.id,
+              displayText: p.category.displayText,
+            }
+          : null,
+      }));
+
+      return {
+        data: formatted,
+        total,
+        page,
+        limit,
+      };
+    } catch (error) {
+      this.logger.error('Failed to fetch products with filters', error.message);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async getProductById(id: string): Promise<Product> {
+    const product = await this.productRepository.findOne(
+      { id },
+      {
+        relations: ['category', 'variants', 'variants.images', 'reviews'],
+      },
+    );
+
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    return product;
   }
 }

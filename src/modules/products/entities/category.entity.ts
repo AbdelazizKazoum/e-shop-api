@@ -14,15 +14,15 @@ export class Category {
   id: string;
 
   @Column()
-  category: string;
+  category?: string;
 
   @Column()
   displayText: string;
 
   @Column({ default: true })
-  imageUrl: string;
+  imageUrl?: string;
 
   @ManyToOne(() => Product, (product) => product.category)
   @JoinColumn()
-  products: Product[];
+  products?: Product[];
 }

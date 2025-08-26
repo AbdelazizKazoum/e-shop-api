@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   Controller,
   Post,
@@ -6,6 +7,8 @@ import {
   UseInterceptors,
   Param,
   UploadedFiles,
+  Get,
+  Query,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ProductsService } from './products.service';
@@ -60,5 +63,45 @@ export class ProductsController {
     );
 
     return this.productsService.createVariants(productId, variants, files);
+  }
+
+  /**
+   * Fetch all products with pagination and filters
+   */
+  @Get()
+  async getAllProducts(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+    @Query('name') name?: string,
+    @Query('brand') brand?: string,
+    @Query('gender') gender?: string,
+    @Query('rating') rating?: number,
+    @Query('minPrice') minPrice?: number,
+    @Query('maxPrice') maxPrice?: number,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.productsService.getAllProductsFilteredAndPaginated(
+      Number(page),
+      Number(limit),
+      {
+        name,
+        brand,
+        gender,
+        rating: rating ? Number(rating) : undefined,
+        minPrice: minPrice ? Number(minPrice) : undefined,
+        maxPrice: maxPrice ? Number(maxPrice) : undefined,
+        startDate,
+        endDate,
+      },
+    );
+  }
+
+  /**
+   * Fetch a single product by ID
+   */
+  @Get(':id')
+  async getProductById(@Param('id') id: string) {
+    return this.productsService.getProductById(id);
   }
 }

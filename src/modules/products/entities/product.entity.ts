@@ -46,6 +46,13 @@ export class Product {
   @Column({ type: 'float', nullable: true })
   newPrice?: number;
 
+  @Column({
+    type: 'enum',
+    enum: ['active', 'inactive', 'archived'],
+    default: 'active',
+  })
+  status?: 'active' | 'inactive' | 'archived';
+
   @Column({ default: false })
   trending?: boolean;
 
