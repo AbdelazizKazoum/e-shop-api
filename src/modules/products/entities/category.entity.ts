@@ -22,7 +22,7 @@ export class Category {
   @Column({ default: true })
   imageUrl: string;
 
-  @ManyToOne(() => Product, (product) => product.categoryP)
+  @ManyToOne(() => Product, (product) => product.category)
   @JoinColumn()
   products: Product[];
 }

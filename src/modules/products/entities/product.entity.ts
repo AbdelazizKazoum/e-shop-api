@@ -26,9 +26,6 @@ export class Product {
   brand: string;
 
   @Column()
-  category: string;
-
-  @Column()
   gender: string;
 
   @Column({ nullable: true })
@@ -60,7 +57,7 @@ export class Product {
 
   @ManyToOne(() => Category, (category) => category.products)
   @JoinColumn()
-  categoryP: Category;
+  category: Category;
 
   @OneToMany(() => Variant, (detail) => detail.product, {
     onDelete: 'CASCADE',
