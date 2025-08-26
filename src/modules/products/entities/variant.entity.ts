@@ -43,13 +43,13 @@ export class Variant {
 
   @OneToMany(() => StockMovement, (movement) => movement.productDetail)
   @JoinColumn()
-  movements: StockMovement[];
+  movements?: StockMovement[];
 
   @OneToMany(() => SupplyOrderItem, (orderItem) => orderItem.variant)
   @JoinColumn()
-  orderItems: SupplyOrderItem[];
+  orderItems?: SupplyOrderItem[];
 
   @OneToOne(() => Stock, (stock) => stock.variant)
   @JoinColumn()
-  stock: Stock;
+  stock?: Stock;
 }

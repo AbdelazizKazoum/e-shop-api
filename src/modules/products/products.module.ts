@@ -8,6 +8,12 @@ import { Stock } from './entities/stock.entity';
 import { Review } from './entities/review.entity';
 import { DatabaseModule } from 'src/core/database/database.module';
 import { Image } from './entities/image.entity';
+import { ProductRepository } from './repositories/product.repository';
+import { CategoryRepository } from './repositories/category.repository';
+import { StorageModule } from '../storage/storage.module';
+import { R2Service } from '../storage/r2.service';
+import { VariantRepository } from './repositories/variant.repository';
+import { ImageRepository } from './repositories/image.repository';
 
 @Module({
   imports: [
@@ -19,8 +25,16 @@ import { Image } from './entities/image.entity';
       Stock,
       Review,
     ]),
+    StorageModule,
   ],
   controllers: [ProductsController],
-  providers: [ProductsService],
+  providers: [
+    ProductsService,
+    ProductRepository,
+    VariantRepository,
+    ImageRepository,
+    CategoryRepository,
+    R2Service,
+  ],
 })
 export class ProductsModule {}

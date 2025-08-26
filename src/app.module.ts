@@ -10,6 +10,7 @@ import { UsersModule } from './modules/users/users.module';
 import { StockMovementsModule } from './modules/stock-movements/stock-movements.module';
 import { SuppliersModule } from './modules/suppliers/suppliers.module';
 import { SupplyOrdersModule } from './modules/supply-orders/supply-orders.module';
+import { StorageModule } from './modules/storage/storage.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { SupplyOrdersModule } from './modules/supply-orders/supply-orders.module
     StockMovementsModule,
     SuppliersModule,
     SupplyOrdersModule,
+    StorageModule,
   ],
   controllers: [AppController],
   providers: [AppService],

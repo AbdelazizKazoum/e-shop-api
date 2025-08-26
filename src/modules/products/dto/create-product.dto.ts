@@ -1,5 +1,4 @@
 import { IsString, IsOptional, IsNumber } from 'class-validator';
-import { Category } from '../entities/category.entity';
 
 export class CreateProductDto {
   @IsString()
@@ -12,7 +11,7 @@ export class CreateProductDto {
   description: string;
 
   @IsString()
-  category: Category;
+  categoryId: string;
 
   @IsString()
   gender: string;

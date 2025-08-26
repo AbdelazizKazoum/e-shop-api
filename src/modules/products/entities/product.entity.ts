@@ -32,7 +32,7 @@ export class Product {
   quantity?: number;
 
   @Column()
-  image: string;
+  image?: string;
 
   @Column({ type: 'float', default: 0 })
   rating?: number;

@@ -8,6 +8,7 @@ export abstract class AbstractRepository<T extends AbstractEntity<T>> {
 
   async create(entity: Omit<T, 'id'>): Promise<T> {
     const newEntity = this.entityRepository.create(entity as T);
+
     return this.entityRepository.save(newEntity);
   }
 
