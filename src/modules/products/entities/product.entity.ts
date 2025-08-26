@@ -28,32 +28,29 @@ export class Product {
   @Column()
   gender: string;
 
-  @Column({ nullable: true })
-  weight: string;
-
   @Column({ default: 0 })
-  quantity: number;
+  quantity?: number;
 
   @Column()
   image: string;
 
   @Column({ type: 'float', default: 0 })
-  rating: number;
+  rating?: number;
 
   @Column({ type: 'int', default: 0 })
-  reviewCount: number;
+  reviewCount?: number;
 
   @Column({ type: 'float', nullable: false })
   price: number;
 
   @Column({ type: 'float', nullable: true })
-  newPrice: number;
+  newPrice?: number;
 
   @Column({ default: false })
-  trending: boolean;
+  trending?: boolean;
 
   @Column({ default: new Date().toLocaleDateString() })
-  createAt: string;
+  createAt?: string;
 
   @ManyToOne(() => Category, (category) => category.products)
   @JoinColumn()
@@ -63,12 +60,12 @@ export class Product {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  variants: Variant[];
+  variants?: Variant[];
 
   @OneToMany(() => Review, (review) => review.product)
   @JoinColumn()
-  reviews: Review[];
+  reviews?: Review[];
 
   @Column({ type: 'float', default: 0 })
-  averageRating: number;
+  averageRating?: number;
 }

@@ -1,26 +1,32 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
+import { File as MulterFile } from 'multer';
+import { ProductRepository } from './repositories/product.repository';
+import { Product } from './entities/product.entity';
 
 @Injectable()
 export class ProductsService {
-  create(createProductDto: CreateProductDto) {
-    return 'This action adds a new product';
-  }
+  private readonly logger = new Logger(ProductsService.name);
 
-  findAll() {
-    return `This action returns all products`;
-  }
+  constructor(private readonly productRepository: ProductRepository) {}
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
-  }
+  async create(
+    createProductDto: CreateProductDto,
+    image?: MulterFile,
+  ): Promise<Product> {
+    try {
+      const productData = {
+        ...createProductDto,
+        image: image ? `/uploads/${image.filename}` : null,
+        // category: { id: createProductDto.category }, // Assuming categoryId is provided
+      };
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+      // Use the repository's create method (already saves)
+      const product = await this.productRepository.create(productData);
+      return product;
+    } catch (error) {
+      this.logger.error('Failed to create product', error);
+      throw error;
+    }
   }
 }
