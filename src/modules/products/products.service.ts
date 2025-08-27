@@ -449,10 +449,10 @@ export class ProductsService {
 
     try {
       // 2. Handle image deletions if any are specified
-      if (updateVariantDto.imageIdsToDelete?.length > 0) {
+      if (updateVariantDto.deletedImages?.length > 0) {
         // First, get the image entities to find their keys for R2 deletion
         const imagesToDelete = await queryRunner.manager.find(Image, {
-          where: { id: In(updateVariantDto.imageIdsToDelete) },
+          where: { id: In(updateVariantDto.deletedImages) },
         });
 
         // Delete files from R2 storage
@@ -463,7 +463,7 @@ export class ProductsService {
 
         // Then, perform a bulk delete from the database
         await queryRunner.manager.delete(Image, {
-          id: In(updateVariantDto.imageIdsToDelete),
+          id: In(updateVariantDto.deletedImages),
         });
       }
 

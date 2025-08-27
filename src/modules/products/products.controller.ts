@@ -10,7 +10,8 @@ import {
   Get,
   Query,
   Patch, // 👈 Import PATCH
-  Delete, // 👈 Import DELETE
+  Delete,
+  Put, // 👈 Import DELETE
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ProductsService } from './products.service';
@@ -75,7 +76,7 @@ export class ProductsController {
   /**
    * Update a product's main information
    */
-  @Patch(':id')
+  @Put(':id')
   @UseInterceptors(FileInterceptor('image'))
   async updateProduct(
     @Param('id') id: string,
@@ -117,6 +118,11 @@ export class ProductsController {
     @UploadedFiles() files: MulterFile[],
   ) {
     const updateVariantDto: UpdateVariantDto = JSON.parse(data);
+    console.log(
+      '🚀 ~ ProductsController ~ updateVariant ~ updateVariantDto:',
+      updateVariantDto,
+    );
+
     return this.productsService.updateVariant(
       variantId,
       updateVariantDto,

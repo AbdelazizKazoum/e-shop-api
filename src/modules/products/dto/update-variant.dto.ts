@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 // src/products/dto/update-variant.dto.ts
 import { IsOptional, IsString, IsNumber, IsIn, IsArray } from 'class-validator';
 
@@ -20,5 +21,5 @@ export class UpdateVariantDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  imageIdsToDelete?: string[];
+  deletedImages?: string[];
 }
