@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { File as MulterFile } from 'multer';
 
@@ -40,5 +44,14 @@ export class R2Service {
     });
 
     return getSignedUrl(this.s3, command, { expiresIn: 3600 });
+  }
+
+  // Delete a file from R2 bucket
+  async deleteFile(key: string): Promise<void> {
+    const command = new DeleteObjectCommand({
+      Bucket: this.bucketName,
+      Key: key,
+    });
+    await this.s3.send(command);
   }
 }

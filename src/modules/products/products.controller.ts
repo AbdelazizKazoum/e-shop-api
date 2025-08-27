@@ -9,6 +9,8 @@ import {
   UploadedFiles,
   Get,
   Query,
+  Patch, // 👈 Import PATCH
+  Delete, // 👈 Import DELETE
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ProductsService } from './products.service';
@@ -16,6 +18,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { File as MulterFile } from 'multer';
 import { R2Service } from '../storage/r2.service'; // adjust path if needed
 import { CreateVariantDto } from './dto/create-variant.dto';
+import { UpdateVariantDto } from './dto/update-variant.dto'; // 👈 Import the new DTO
 
 @Controller('products')
 export class ProductsController {
@@ -63,6 +66,38 @@ export class ProductsController {
     );
 
     return this.productsService.createVariants(productId, variants, files);
+  }
+
+  // =================================================================
+  // ===  UPDATE VARIANT ==================================
+  // =================================================================
+  /**
+   * Update a specific variant by its ID
+   */
+  @Patch('variants/:variantId')
+  @UseInterceptors(FilesInterceptor('newImages')) // Use a different field name for new files
+  async updateVariant(
+    @Param('variantId') variantId: string,
+    @Body('data') data: string, // JSON string of UpdateVariantDto
+    @UploadedFiles() files: MulterFile[],
+  ) {
+    const updateVariantDto: UpdateVariantDto = JSON.parse(data);
+    return this.productsService.updateVariant(
+      variantId,
+      updateVariantDto,
+      files,
+    );
+  }
+
+  // =================================================================
+  // === DELETE VARIANT ==================================
+  // =================================================================
+  /**
+   * Delete a specific variant by its ID
+   */
+  @Delete('variants/:variantId')
+  async deleteVariant(@Param('variantId') variantId: string) {
+    return this.productsService.deleteVariant(variantId);
   }
 
   /**

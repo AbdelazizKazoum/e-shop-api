@@ -17,10 +17,10 @@ import { Image } from './image.entity';
 @Entity()
 export class Variant {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id?: string;
 
   @Column()
-  color: string;
+  color?: string;
 
   @Column()
   size: 'SM' | 'M' | 'L' | 'XL' | 'XXL' | '3XL' | '4XL';

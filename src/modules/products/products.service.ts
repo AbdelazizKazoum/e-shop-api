@@ -14,9 +14,12 @@ import { CategoryRepository } from './repositories/category.repository';
 import { VariantRepository } from './repositories/variant.repository';
 import { ImageRepository } from './repositories/image.repository';
 import { R2Service } from '../storage/r2.service';
-import { DataSource } from 'typeorm';
+import { DataSource, In } from 'typeorm';
 import { File as MulterFile } from 'multer';
 import { CreateVariantDto } from './dto/create-variant.dto';
+import { Variant } from './entities/variant.entity';
+import { UpdateVariantDto } from './dto/update-variant.dto';
+import { Image } from './entities/image.entity';
 
 @Injectable()
 export class ProductsService {
@@ -250,5 +253,202 @@ export class ProductsService {
     }
 
     return product;
+  }
+
+  // =================================================================
+  // === NEW METHOD: CREATE SINGLE VARIANT ===========================
+  // =================================================================
+  async createVariant(
+    productId: string,
+    variantData: CreateVariantDto,
+    files: MulterFile[],
+  ): Promise<Variant> {
+    const product = await this.productRepository.findOne({
+      id: productId,
+    });
+    if (!product) {
+      throw new NotFoundException(`Product with ID "${productId}" not found`);
+    }
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // 1. Create the variant entity
+      const variant = queryRunner.manager.create(Variant, {
+        color: variantData.color,
+        size: variantData.size,
+        qte: variantData.qte,
+        product,
+      });
+      const savedVariant = await queryRunner.manager.save(Variant, variant);
+
+      // 2. Handle the image uploads for the variant
+      if (files?.length > 0) {
+        for (const file of files) {
+          const key = `products/variants/${Date.now()}-${file.originalname}`;
+          const imagePath = await this.r2Service.uploadFile(file, key);
+
+          const imageEntity = queryRunner.manager.create(Image, {
+            image: imagePath,
+            variant: savedVariant,
+          });
+          await queryRunner.manager.save(Image, imageEntity);
+        }
+      }
+
+      await queryRunner.commitTransaction();
+
+      // 3. Return the newly created variant with its images
+      return this.variantRepository.findOne(
+        {
+          id: savedVariant.id,
+        },
+        { relations: ['images'] },
+      );
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      this.logger.error(
+        `Failed to create variant for product ${productId}`,
+        err.stack,
+      );
+      throw new InternalServerErrorException('Failed to create variant');
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  // =================================================================
+  // === NEW METHOD: UPDATE VARIANT ==================================
+  // =================================================================
+  async updateVariant(
+    variantId: string,
+    updateVariantDto: UpdateVariantDto,
+    files?: MulterFile[],
+  ): Promise<Variant> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    // 1. Find the variant to update
+    const variant = (await queryRunner.manager.findOne('Variant', {
+      where: { id: variantId },
+    })) as Variant;
+
+    if (!variant) {
+      throw new NotFoundException(`Variant with ID "${variantId}" not found`);
+    }
+
+    try {
+      // 2. Handle image deletions if any are specified
+      if (updateVariantDto.imageIdsToDelete?.length > 0) {
+        // First, get the image entities to find their keys for R2 deletion
+        const imagesToDelete = await queryRunner.manager.find(Image, {
+          where: { id: In(updateVariantDto.imageIdsToDelete) },
+        });
+
+        // Delete files from R2 storage
+        for (const image of imagesToDelete) {
+          // Assuming the 'image' property stores the R2 key
+          await this.r2Service.deleteFile(image.image);
+        }
+
+        // Then, perform a bulk delete from the database
+        await queryRunner.manager.delete(Image, {
+          id: In(updateVariantDto.imageIdsToDelete),
+        });
+      }
+
+      // 3. Handle new image uploads
+      if (files?.length > 0) {
+        for (const file of files) {
+          const key = `products/variants/${Date.now()}-${file.originalname}`;
+          const imagePath = await this.r2Service.uploadFile(file, key);
+
+          const newImage = queryRunner.manager.create(Image, {
+            image: imagePath,
+            variant: variant,
+          });
+          await queryRunner.manager.save(Image, newImage);
+        }
+      }
+
+      // 4. Update variant's own properties
+      queryRunner.manager.merge(Variant, variant, {
+        color: updateVariantDto.color,
+        size: updateVariantDto.size,
+        qte: updateVariantDto.qte,
+      });
+      await queryRunner.manager.save(Variant, variant);
+
+      // 5. Commit the transaction
+      await queryRunner.commitTransaction();
+
+      // Return the fully updated variant with its relations
+      return this.variantRepository.findOne(
+        {
+          id: variantId,
+        },
+        { relations: ['images'] },
+      );
+    } catch (err) {
+      // If anything fails, roll back the entire transaction
+      await queryRunner.rollbackTransaction();
+      this.logger.error(`Failed to update variant ${variantId}`, err.stack);
+      throw new InternalServerErrorException(
+        err.message || 'Failed to update variant',
+      );
+    } finally {
+      // IMPORTANT: Always release the query runner
+      await queryRunner.release();
+    }
+  }
+
+  // =================================================================
+  // === DELETE VARIANT ==================================
+  // =================================================================
+  async deleteVariant(variantId: string): Promise<{ message: string }> {
+    // We use a transaction to ensure that deleting files and DB records is atomic
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // 1. Find the variant and its associated images
+      const variant = await queryRunner.manager.findOne(Variant, {
+        where: { id: variantId },
+        relations: ['images'],
+      });
+
+      if (!variant) {
+        throw new NotFoundException(`Variant with ID "${variantId}" not found`);
+      }
+
+      // 2. Delete all associated images from R2 storage
+      if (variant.images?.length > 0) {
+        for (const image of variant.images) {
+          await this.r2Service.deleteFile(image.image);
+        }
+      }
+
+      // 3. Delete the variant from the database.
+      // Because of `onDelete: 'CASCADE'` in the Image entity,
+      // TypeORM will automatically delete the associated image records.
+      await queryRunner.manager.remove(Variant, variant);
+
+      // 4. Commit transaction
+      await queryRunner.commitTransaction();
+
+      return { message: 'Variant deleted successfully' };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      this.logger.error(`Failed to delete variant ${variantId}`, err.stack);
+      throw new InternalServerErrorException(
+        err.message || 'Failed to delete variant',
+      );
+    } finally {
+      await queryRunner.release();
+    }
   }
 }

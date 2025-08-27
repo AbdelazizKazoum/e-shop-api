@@ -6,7 +6,7 @@ export class CreateVariantDto {
   color: string;
 
   @IsString()
-  size: string;
+  size: 'SM' | 'M' | 'L' | 'XL' | 'XXL' | '3XL' | '4XL';
 
   @IsNumber()
   qte: number;
