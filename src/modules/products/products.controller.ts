@@ -19,6 +19,7 @@ import { File as MulterFile } from 'multer';
 import { R2Service } from '../storage/r2.service'; // adjust path if needed
 import { CreateVariantDto } from './dto/create-variant.dto';
 import { UpdateVariantDto } from './dto/update-variant.dto'; // 👈 Import the new DTO
+import { UpdateProductDto } from './dto/update-product.dto';
 
 @Controller('products')
 export class ProductsController {
@@ -66,6 +67,40 @@ export class ProductsController {
     );
 
     return this.productsService.createVariants(productId, variants, files);
+  }
+
+  // =================================================================
+  // === NEW METHOD: UPDATE PRODUCT ==================================
+  // =================================================================
+  /**
+   * Update a product's main information
+   */
+  @Patch(':id')
+  @UseInterceptors(FileInterceptor('image'))
+  async updateProduct(
+    @Param('id') id: string,
+    @Body('data') data: string, // JSON string of UpdateProductDto
+    @UploadedFile() image?: MulterFile,
+  ) {
+    const updateProductDto: UpdateProductDto = JSON.parse(data);
+    return this.productsService.updateProduct(id, updateProductDto, image);
+  }
+
+  // =================================================================
+  // === CREATE SINGLE VARIANT ===========================
+  // =================================================================
+  /**
+   * Create a single variant for a product
+   */
+  @Post(':productId/variant')
+  @UseInterceptors(FilesInterceptor('images'))
+  async createVariant(
+    @Param('productId') productId: string,
+    @Body('data') data: string, // JSON string of CreateVariantDto
+    @UploadedFiles() files: MulterFile[],
+  ) {
+    const variantData: CreateVariantDto = JSON.parse(data);
+    return this.productsService.createVariant(productId, variantData, files);
   }
 
   // =================================================================

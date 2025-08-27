@@ -20,6 +20,7 @@ import { CreateVariantDto } from './dto/create-variant.dto';
 import { Variant } from './entities/variant.entity';
 import { UpdateVariantDto } from './dto/update-variant.dto';
 import { Image } from './entities/image.entity';
+import { UpdateProductDto } from './dto/update-product.dto';
 
 @Injectable()
 export class ProductsService {
@@ -253,6 +254,86 @@ export class ProductsService {
     }
 
     return product;
+  }
+
+  // =================================================================
+  // === NEW METHOD: UPDATE PRODUCT ==================================
+  // =================================================================
+  async updateProduct(
+    productId: string,
+    updateProductDto: UpdateProductDto,
+    image?: MulterFile,
+  ): Promise<Product> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // 1. Find the product to update
+      const product = await queryRunner.manager.findOne(Product, {
+        where: { id: productId },
+        relations: ['category'], // Load the category relation
+      });
+
+      if (!product) {
+        throw new NotFoundException(`Product with ID "${productId}" not found`);
+      }
+
+      let imagePath = product.image;
+
+      // 2. Handle new image upload
+      if (image) {
+        // If an old image exists, delete it from R2 storage
+        if (product.image) {
+          await this.r2Service.deleteFile(product.image);
+        }
+        // Upload the new image and get its path/key
+        const key = `products/main/${Date.now()}-${image.originalname}`;
+        imagePath = await this.r2Service.uploadFile(image, key);
+      }
+
+      // 3. Handle category update if a new categoryId is provided
+      let categoryToUpdate = product.category;
+      if (
+        updateProductDto.categoryId &&
+        updateProductDto.categoryId !== product.category.id
+      ) {
+        const newCategory = await this.categoryRepository.findOne({
+          id: updateProductDto.categoryId,
+        });
+        if (!newCategory) {
+          throw new NotFoundException(
+            `Category with ID "${updateProductDto.categoryId}" not found`,
+          );
+        }
+        categoryToUpdate = newCategory;
+      }
+
+      // 4. Merge the updated data into the product entity
+      const { categoryId, ...productData } = updateProductDto;
+      queryRunner.manager.merge(Product, product, {
+        ...productData,
+        image: imagePath,
+        category: categoryToUpdate,
+      });
+
+      // 5. Save the updated product
+      const updatedProduct = await queryRunner.manager.save(Product, product);
+
+      // 6. Commit the transaction
+      await queryRunner.commitTransaction();
+      return updatedProduct;
+    } catch (err) {
+      // If any error occurs, roll back the entire transaction
+      await queryRunner.rollbackTransaction();
+      this.logger.error(`Failed to update product ${productId}`, err.stack);
+      throw new InternalServerErrorException(
+        err.message || 'Failed to update product',
+      );
+    } finally {
+      // 7. Always release the query runner to free up the connection
+      await queryRunner.release();
+    }
   }
 
   // =================================================================
