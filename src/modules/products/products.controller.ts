@@ -70,7 +70,7 @@ export class ProductsController {
   }
 
   // =================================================================
-  // === NEW METHOD: UPDATE PRODUCT ==================================
+  // === UPDATE PRODUCT ==================================
   // =================================================================
   /**
    * Update a product's main information
@@ -165,6 +165,17 @@ export class ProductsController {
         endDate,
       },
     );
+  }
+
+  // =================================================================
+  // === FETCH ALL CATEGORIES ========================================
+  // =================================================================
+  /**
+   * Fetch all categories
+   */
+  @Get('categories')
+  async getAllCategories() {
+    return this.productsService.getAllCategories();
   }
 
   /**

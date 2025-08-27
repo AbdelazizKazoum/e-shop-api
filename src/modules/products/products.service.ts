@@ -36,6 +36,12 @@ export class ProductsService {
     private readonly dataSource: DataSource, // needed for transaction
   ) {}
 
+  /**
+   * Create a new product.
+   * - Fetches the category entity by ID.
+   * - Saves the product with the provided image and category.
+   * - Throws if the category is not found or saving fails.
+   */
   async create(
     createProductDto: CreateProductDto,
     image?: string,
@@ -69,6 +75,14 @@ export class ProductsService {
     }
   }
 
+  /**
+   * Create multiple variants for a product.
+   * - Finds the product by ID.
+   * - For each variant, creates the variant entity and uploads its images.
+   * - Associates uploaded images with the correct variant.
+   * - Uses a transaction for atomicity.
+   * - Throws if the product is not found or saving fails.
+   */
   async createVariants(
     productId: string,
     variants: CreateVariantDto[],
@@ -125,6 +139,12 @@ export class ProductsService {
       await queryRunner.release();
     }
   }
+  /**
+   * Fetch all products with pagination and filters.
+   * - Supports filtering by name, brand, gender, rating, price range, and date range.
+   * - Returns paginated results with total count.
+   * - Joins category data for each product.
+   */
   async getAllProductsFilteredAndPaginated(
     page: number = 1,
     limit: number = 10,
@@ -241,6 +261,11 @@ export class ProductsService {
     }
   }
 
+  /**
+   * Fetch a single product by its ID.
+   * - Loads related category, variants, images, and reviews.
+   * - Throws if the product is not found.
+   */
   async getProductById(id: string): Promise<Product> {
     const product = await this.productRepository.findOne(
       { id },
@@ -257,7 +282,7 @@ export class ProductsService {
   }
 
   // =================================================================
-  // === NEW METHOD: UPDATE PRODUCT ==================================
+  // === UPDATE PRODUCT ==================================
   // =================================================================
   async updateProduct(
     productId: string,
@@ -310,6 +335,7 @@ export class ProductsService {
       }
 
       // 4. Merge the updated data into the product entity
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { categoryId, ...productData } = updateProductDto;
       queryRunner.manager.merge(Product, product, {
         ...productData,
@@ -337,7 +363,7 @@ export class ProductsService {
   }
 
   // =================================================================
-  // === NEW METHOD: CREATE SINGLE VARIANT ===========================
+  // === CREATE SINGLE VARIANT ===========================
   // =================================================================
   async createVariant(
     productId: string,
@@ -401,7 +427,7 @@ export class ProductsService {
   }
 
   // =================================================================
-  // === NEW METHOD: UPDATE VARIANT ==================================
+  // === UPDATE VARIANT ==================================
   // =================================================================
   async updateVariant(
     variantId: string,
@@ -530,6 +556,76 @@ export class ProductsService {
       );
     } finally {
       await queryRunner.release();
+    }
+  }
+
+  // =================================================================
+  // === DELETE PRODUCT ==============================================
+  // =================================================================
+  async deleteProduct(productId: string): Promise<{ message: string }> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // 1. Find the product with its variants and images
+      const product = await queryRunner.manager.findOne(Product, {
+        where: { id: productId },
+        relations: ['variants', 'variants.images'],
+      });
+
+      if (!product) {
+        throw new NotFoundException(`Product with ID "${productId}" not found`);
+      }
+
+      // 2. Delete all images from R2 storage (main image + variant images)
+      if (product.image) {
+        await this.r2Service.deleteFile(product.image);
+      }
+
+      if (product.variants?.length > 0) {
+        for (const variant of product.variants) {
+          if (variant.images?.length > 0) {
+            for (const image of variant.images) {
+              await this.r2Service.deleteFile(image.image);
+            }
+          }
+        }
+      }
+
+      // 3. Remove the product (will cascade to variants and images if set up)
+      await queryRunner.manager.remove(Product, product);
+
+      // 4. Commit transaction
+      await queryRunner.commitTransaction();
+
+      return { message: 'Product deleted successfully' };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      this.logger.error(`Failed to delete product ${productId}`, err.stack);
+      throw new InternalServerErrorException(
+        err.message || 'Failed to delete product',
+      );
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  // =================================================================
+  // === FETCH ALL CATEGORIES ========================================
+  // =================================================================
+  async getAllCategories(): Promise<Category[]> {
+    try {
+      const categories = await this.categoryRepository.findAll();
+
+      // if (!categories || categories.length === 0) {
+      //   throw new NotFoundException('No categories found');
+      // }
+
+      return categories;
+    } catch (error) {
+      this.logger.error('Failed to fetch categories', error.message);
+      throw new InternalServerErrorException(error.message);
     }
   }
 }
