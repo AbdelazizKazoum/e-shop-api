@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 // src/products/dto/update-product.dto.ts
 import {
   IsString,
