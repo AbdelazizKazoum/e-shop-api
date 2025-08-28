@@ -53,7 +53,7 @@ export class ProductsService {
 
     // Fetch the category entity
     const category: Category = await this.categoryRepository.findOne({
-      id: '1', //createProductDto.categoryId,
+      id: createProductDto.categoryId,
     });
     if (!category) {
       throw new NotFoundException('Category not found');
@@ -182,6 +182,132 @@ export class ProductsService {
           'product.trending',
           'product.createAt',
           'product.status',
+          'category.id',
+          'category.displayText',
+        ]);
+
+      // Apply filters dynamically
+      if (filters.name) {
+        query.andWhere('LOWER(product.name) LIKE :name', {
+          name: `%${filters.name.toLowerCase()}%`,
+        });
+      }
+
+      if (filters.brand) {
+        query.andWhere('LOWER(product.brand) LIKE :brand', {
+          brand: `%${filters.brand.toLowerCase()}%`,
+        });
+      }
+
+      if (filters.gender) {
+        query.andWhere('product.gender = :gender', { gender: filters.gender });
+      }
+
+      if (filters.rating) {
+        query.andWhere('product.rating >= :rating', { rating: filters.rating });
+      }
+
+      if (filters.minPrice) {
+        query.andWhere('product.price >= :minPrice', {
+          minPrice: filters.minPrice,
+        });
+      }
+
+      if (filters.maxPrice) {
+        query.andWhere('product.price <= :maxPrice', {
+          maxPrice: filters.maxPrice,
+        });
+      }
+
+      if (filters.startDate) {
+        query.andWhere('product.createAt >= :startDate', {
+          startDate: filters.startDate,
+        });
+      }
+
+      if (filters.endDate) {
+        query.andWhere('product.createAt <= :endDate', {
+          endDate: filters.endDate,
+        });
+      }
+
+      // Pagination
+      query
+        .skip((page - 1) * limit)
+        .take(limit)
+        .orderBy('product.createAt', 'DESC');
+
+      const [products, total] = await query.getManyAndCount();
+
+      const formatted = products.map((p) => ({
+        ...p,
+        category: p.category
+          ? {
+              id: p.category.id,
+              displayText: p.category.displayText,
+            }
+          : null,
+      }));
+
+      return {
+        data: formatted,
+        total,
+        page,
+        limit,
+      };
+    } catch (error) {
+      this.logger.error('Failed to fetch products with filters', error.message);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  /**
+   * Fetch all products with pagination and filters.
+   * - Supports filtering by name, brand, gender, rating, price range, and date range.
+   * - Returns paginated results with total count.
+   * - Joins category data for each product.
+   */
+  async getAllProductsFilteredAndPaginatedClient(
+    page: number = 1,
+    limit: number = 10,
+    filters: {
+      name?: string;
+      brand?: string;
+      gender?: string;
+      rating?: number;
+      minPrice?: number;
+      maxPrice?: number;
+      startDate?: string;
+      endDate?: string;
+    },
+  ): Promise<{
+    data: Partial<Product>[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
+    try {
+      const query = this.productRepository['productRepository'] // underlying TypeORM repo
+        .createQueryBuilder('product')
+        .leftJoinAndSelect('product.category', 'category')
+        .leftJoinAndSelect('product.variant', 'variant')
+        .leftJoinAndSelect('variant.image', 'image')
+        .select([
+          'product.id',
+          'product.name',
+          'product.brand',
+          'product.price',
+          'product.gender',
+          'product.newPrice',
+          'product.quantity',
+          'product.image',
+          'product.rating',
+          'product.reviewCount',
+          'product.trending',
+          'product.createAt',
+          'product.status',
+          'product.variant',
+
           'category.id',
           'category.displayText',
         ]);

@@ -173,6 +173,38 @@ export class ProductsController {
     );
   }
 
+  /**
+   * Fetch all products with pagination and filters
+   */
+  @Get('client')
+  async getAllProductsCLient(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+    @Query('name') name?: string,
+    @Query('brand') brand?: string,
+    @Query('gender') gender?: string,
+    @Query('rating') rating?: number,
+    @Query('minPrice') minPrice?: number,
+    @Query('maxPrice') maxPrice?: number,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.productsService.getAllProductsFilteredAndPaginated(
+      Number(page),
+      Number(limit),
+      {
+        name,
+        brand,
+        gender,
+        rating: rating ? Number(rating) : undefined,
+        minPrice: minPrice ? Number(minPrice) : undefined,
+        maxPrice: maxPrice ? Number(maxPrice) : undefined,
+        startDate,
+        endDate,
+      },
+    );
+  }
+
   // =================================================================
   // === FETCH ALL CATEGORIES ========================================
   // =================================================================
