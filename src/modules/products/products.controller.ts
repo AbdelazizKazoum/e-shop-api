@@ -189,7 +189,7 @@ export class ProductsController {
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
   ) {
-    return this.productsService.getAllProductsFilteredAndPaginated(
+    return this.productsService.getAllProductsFilteredAndPaginatedClient(
       Number(page),
       Number(limit),
       {

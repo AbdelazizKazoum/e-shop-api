@@ -287,11 +287,11 @@ export class ProductsService {
     limit: number;
   }> {
     try {
-      const query = this.productRepository['productRepository'] // underlying TypeORM repo
+      const query = this.productRepository['productRepository']
         .createQueryBuilder('product')
         .leftJoinAndSelect('product.category', 'category')
-        .leftJoinAndSelect('product.variant', 'variant')
-        .leftJoinAndSelect('variant.image', 'image')
+        .leftJoinAndSelect('product.variants', 'variant')
+        .leftJoinAndSelect('variant.images', 'image')
         .select([
           'product.id',
           'product.name',
@@ -306,10 +306,17 @@ export class ProductsService {
           'product.trending',
           'product.createAt',
           'product.status',
-          'product.variant',
 
           'category.id',
           'category.displayText',
+
+          'variant.id',
+          'variant.color',
+          'variant.size',
+          'variant.qte',
+
+          'image.id',
+          'image.image',
         ]);
 
       // Apply filters dynamically
