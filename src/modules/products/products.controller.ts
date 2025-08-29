@@ -177,7 +177,7 @@ export class ProductsController {
    * Fetch all products with pagination and filters
    */
   @Get('client')
-  async getAllProductsCLient(
+  async getAllProductsClient(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
     @Query('name') name?: string,
@@ -188,6 +188,15 @@ export class ProductsController {
     @Query('maxPrice') maxPrice?: number,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
+    @Query('categories') categories?: string[], // categories[]=Sport&categories[]=Accessoires
+    @Query('sizes') sizes?: string[], // sizes[]=S&sizes[]=M
+    @Query('sortOrder')
+    sortOrder?:
+      | 'Best-Rating'
+      | 'Newest'
+      | 'low-high'
+      | 'Price-high'
+      | 'Most-Popular',
   ) {
     return this.productsService.getAllProductsFilteredAndPaginatedClient(
       Number(page),
@@ -201,6 +210,9 @@ export class ProductsController {
         maxPrice: maxPrice ? Number(maxPrice) : undefined,
         startDate,
         endDate,
+        categories,
+        sizes,
+        sortOrder,
       },
     );
   }

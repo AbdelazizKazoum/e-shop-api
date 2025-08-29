@@ -263,9 +263,9 @@ export class ProductsService {
 
   /**
    * Fetch all products with pagination and filters.
-   * - Supports filtering by name, brand, gender, rating, price range, and date range.
+   * - Supports filtering by name, brand, gender, rating, price range, date range, categories, sizes, and sort order.
    * - Returns paginated results with total count.
-   * - Joins category data for each product.
+   * - Joins category and variant data for each product.
    */
   async getAllProductsFilteredAndPaginatedClient(
     page: number = 1,
@@ -279,6 +279,14 @@ export class ProductsService {
       maxPrice?: number;
       startDate?: string;
       endDate?: string;
+      categories?: string[]; // e.g. ["Sport", "Accessoires"]
+      sizes?: string[]; // e.g. ["XS", "S", "M"]
+      sortOrder?:
+        | 'Best-Rating'
+        | 'Newest'
+        | 'low-high'
+        | 'Price-high'
+        | 'Most-Popular';
     },
   ): Promise<{
     data: Partial<Product>[];
@@ -286,6 +294,11 @@ export class ProductsService {
     page: number;
     limit: number;
   }> {
+    console.log(
+      '🚀 ~ ProductsService ~ getAllProductsFilteredAndPaginatedClient ~ categories:',
+      filters.categories,
+    );
+
     try {
       const query = this.productRepository['productRepository']
         .createQueryBuilder('product')
@@ -319,7 +332,7 @@ export class ProductsService {
           'image.image',
         ]);
 
-      // Apply filters dynamically
+      // --- Filters ---
       if (filters.name) {
         query.andWhere('LOWER(product.name) LIKE :name', {
           name: `%${filters.name.toLowerCase()}%`,
@@ -364,11 +377,46 @@ export class ProductsService {
         });
       }
 
+      if (filters.categories && filters.categories.length > 0) {
+        console.log(
+          '🚀 ~ ProductsService ~ getAllProductsFilteredAndPaginatedClient ~ categories:',
+          filters.categories,
+        );
+
+        query.andWhere('category.displayText IN (:...categories)', {
+          categories: filters.categories,
+        });
+      }
+
+      if (filters.sizes && filters.sizes.length > 0) {
+        query.andWhere('variant.size IN (:...sizes)', {
+          sizes: filters.sizes,
+        });
+      }
+
+      // --- Sorting ---
+      switch (filters.sortOrder) {
+        case 'Best-Rating':
+          query.orderBy('product.rating', 'DESC');
+          break;
+        case 'Newest':
+          query.orderBy('product.createAt', 'DESC');
+          break;
+        case 'low-high':
+          query.orderBy('product.price', 'ASC');
+          break;
+        case 'Price-high':
+          query.orderBy('product.price', 'DESC');
+          break;
+        case 'Most-Popular':
+          query.orderBy('product.reviewCount', 'DESC');
+          break;
+        default:
+          query.orderBy('product.createAt', 'DESC'); // fallback
+      }
+
       // Pagination
-      query
-        .skip((page - 1) * limit)
-        .take(limit)
-        .orderBy('product.createAt', 'DESC');
+      query.skip((page - 1) * limit).take(limit);
 
       const [products, total] = await query.getManyAndCount();
 
