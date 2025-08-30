@@ -809,13 +809,13 @@ export class ProductsService {
       throw new InternalServerErrorException(error.message);
     }
   }
-
   // =================================================================
   // === CREATE CATEGORY =============================================
   // =================================================================
   async createCategory(data: Partial<Category>): Promise<Category> {
+    let category: Category;
     try {
-      const category = await this.categoryRepository.create({
+      category = await this.categoryRepository.create({
         displayText: data.displayText,
         category: data.category,
         imageUrl: data.imageUrl,
@@ -824,6 +824,22 @@ export class ProductsService {
       return category;
     } catch (error) {
       this.logger.error('Failed to create category', error.message);
+
+      // ✅ If the image was uploaded but category creation fails, delete the image
+      if (data.imageUrl) {
+        try {
+          await this.r2Service.deleteFile(data.imageUrl);
+          this.logger.log(
+            `Deleted uploaded image due to create failure: ${data.imageUrl}`,
+          );
+        } catch (deleteError) {
+          this.logger.error(
+            `Failed to delete uploaded image: ${data.imageUrl}`,
+            deleteError.message,
+          );
+        }
+      }
+
       throw new InternalServerErrorException(error.message);
     }
   }

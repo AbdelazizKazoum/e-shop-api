@@ -235,21 +235,51 @@ export class ProductsController {
   async getProductById(@Param('id') id: string) {
     return this.productsService.getProductById(id);
   }
-
   // =================================================================
   // === CREATE CATEGORY =============================================
   // =================================================================
   @Post('categories')
-  async createCategory(@Body() data: any) {
-    return this.productsService.createCategory(data);
+  @UseInterceptors(FileInterceptor('imageFile')) // match the FormData key
+  async createCategory(
+    @Body('data') data: string, // JSON string of category info
+    @UploadedFile() imageFile?: MulterFile,
+  ) {
+    const createCategoryDto = JSON.parse(data);
+    let imageUrl: string | null = null;
+
+    if (imageFile) {
+      const key = `categories/${Date.now()}-${imageFile.originalname}`;
+      imageUrl = await this.r2Service.uploadFile(imageFile, key);
+    }
+
+    return this.productsService.createCategory({
+      ...createCategoryDto,
+      imageUrl,
+    });
   }
 
   // =================================================================
   // === UPDATE CATEGORY =============================================
   // =================================================================
   @Patch('categories/:id')
-  async updateCategory(@Param('id') id: string, @Body() data: any) {
-    return this.productsService.updateCategory(id, data);
+  @UseInterceptors(FileInterceptor('imageFile'))
+  async updateCategory(
+    @Param('id') id: string,
+    @Body('data') data: string, // JSON string of update info
+    @UploadedFile() imageFile?: MulterFile,
+  ) {
+    const updateCategoryDto = JSON.parse(data);
+    let imageUrl: string | null = null;
+
+    if (imageFile) {
+      const key = `categories/${Date.now()}-${imageFile.originalname}`;
+      imageUrl = await this.r2Service.uploadFile(imageFile, key);
+    }
+
+    return this.productsService.updateCategory(id, {
+      ...updateCategoryDto,
+      imageUrl,
+    });
   }
 
   // =================================================================
