@@ -442,6 +442,93 @@ export class ProductsService {
     }
   }
 
+  // =================================================================
+  // === FETCH NEW ARRIVALS ==========================================
+  // =================================================================
+  /**
+   * Fetch the 5 most recently created products.
+   * - Orders products by creation date.
+   * - Returns the top 5 results.
+   */
+  async getNewArrivals(): Promise<Product[]> {
+    try {
+      // Use the repository to find products, ordering by creation date descending
+      // and taking only the first 5.
+      const newProducts = await this.productRepository.findAll({
+        order: {
+          createAt: 'DESC',
+        },
+        take: 5,
+        relations: ['category'], // Include category for context
+      });
+
+      return newProducts;
+    } catch (error) {
+      this.logger.error('Failed to fetch new arrival products', error.stack);
+      throw new InternalServerErrorException(
+        'Failed to fetch new arrival products',
+      );
+    }
+  }
+
+  // =================================================================
+  // === FETCH BEST SELLERS ==========================================
+  // =================================================================
+  /**
+   * Fetch the 5 best-selling products.
+   * - NOTE: Current logic is a placeholder, ordering by name.
+   * - This should be updated later with actual sales data logic.
+   * - Returns the top 5 results.
+   */
+  async getBestSellers(): Promise<Product[]> {
+    try {
+      // Placeholder logic: Fetching the first 5 products ordered by name (A-Z)
+      const bestSellers = await this.productRepository.findAll({
+        order: {
+          name: 'ASC',
+        },
+        take: 5,
+        relations: ['category'], // Optionally include category details
+      });
+
+      return bestSellers;
+    } catch (error) {
+      this.logger.error('Failed to fetch best-seller products', error.stack);
+      throw new InternalServerErrorException(
+        'Failed to fetch best-seller products',
+      );
+    }
+  }
+
+  // =================================================================
+  // === FETCH FEATURED PRODUCTS (OUR PICKS) =======================
+  // =================================================================
+  /**
+   * Fetch 3 featured products selected by the admin/us.
+   * - NOTE: Current logic orders by the 'trending' flag and then by creation date.
+   * - Returns the top 3 results.
+   */
+  async getFeaturedProducts(): Promise<Product[]> {
+    try {
+      // Fetches the first 3 products, prioritizing those marked as 'trending'.
+      const featuredProducts = await this.productRepository.findAll({
+        order: {
+          trending: 'DESC', // Puts 'true' values first
+          createAt: 'DESC',
+        },
+        take: 3,
+        relations: ['category'], // Optionally include category details
+      });
+
+      return featuredProducts;
+    } catch (error) {
+      this.logger.error('Failed to fetch featured products', error.stack);
+      throw new InternalServerErrorException(
+        'Failed to fetch featured products',
+      );
+    }
+  }
+
   /**
    * Fetch a single product by its ID.
    * - Loads related category, variants, images, and reviews.
@@ -800,7 +887,7 @@ export class ProductsService {
       const categories = await this.categoryRepository.findAll();
 
       // if (!categories || categories.length === 0) {
-      //   throw new NotFoundException('No categories found');
+      // 	throw new NotFoundException('No categories found');
       // }
 
       return categories;
