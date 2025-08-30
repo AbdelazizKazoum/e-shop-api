@@ -3,8 +3,8 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { Product } from './product.entity';
 
@@ -22,7 +22,7 @@ export class Category {
   @Column({ default: true })
   imageUrl?: string;
 
-  @ManyToOne(() => Product, (product) => product.category)
+  @OneToMany(() => Product, (product) => product.category)
   @JoinColumn()
   products?: Product[];
 }

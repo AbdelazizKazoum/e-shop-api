@@ -809,4 +809,60 @@ export class ProductsService {
       throw new InternalServerErrorException(error.message);
     }
   }
+
+  // =================================================================
+  // === CREATE CATEGORY =============================================
+  // =================================================================
+  async createCategory(data: Partial<Category>): Promise<Category> {
+    try {
+      const category = await this.categoryRepository.create({
+        displayText: data.displayText,
+        category: data.category,
+        imageUrl: data.imageUrl,
+      } as Category);
+
+      return category;
+    } catch (error) {
+      this.logger.error('Failed to create category', error.message);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  // =================================================================
+  // === UPDATE CATEGORY =============================================
+  // =================================================================
+  async updateCategory(
+    categoryId: string,
+    data: Partial<Category>,
+  ): Promise<Category> {
+    try {
+      const updatedCategory = await this.categoryRepository.findOneAndUpdate(
+        { id: categoryId },
+        data,
+      );
+      return updatedCategory;
+    } catch (error) {
+      this.logger.error(
+        `Failed to update category ${categoryId}`,
+        error.message,
+      );
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  // =================================================================
+  // === DELETE CATEGORY =============================================
+  // =================================================================
+  async deleteCategory(categoryId: string): Promise<{ message: string }> {
+    try {
+      await this.categoryRepository.findOneAndDelete({ id: categoryId });
+      return { message: 'Category deleted successfully' };
+    } catch (error) {
+      this.logger.error(
+        `Failed to delete category ${categoryId}`,
+        error.message,
+      );
+      throw new InternalServerErrorException(error.message);
+    }
+  }
 }

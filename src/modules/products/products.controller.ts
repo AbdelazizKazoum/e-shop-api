@@ -235,4 +235,28 @@ export class ProductsController {
   async getProductById(@Param('id') id: string) {
     return this.productsService.getProductById(id);
   }
+
+  // =================================================================
+  // === CREATE CATEGORY =============================================
+  // =================================================================
+  @Post('categories')
+  async createCategory(@Body() data: any) {
+    return this.productsService.createCategory(data);
+  }
+
+  // =================================================================
+  // === UPDATE CATEGORY =============================================
+  // =================================================================
+  @Patch('categories/:id')
+  async updateCategory(@Param('id') id: string, @Body() data: any) {
+    return this.productsService.updateCategory(id, data);
+  }
+
+  // =================================================================
+  // === DELETE CATEGORY =============================================
+  // =================================================================
+  @Delete('categories/:id')
+  async deleteCategory(@Param('id') id: string) {
+    return this.productsService.deleteCategory(id);
+  }
 }
