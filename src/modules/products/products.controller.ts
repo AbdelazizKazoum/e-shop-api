@@ -105,7 +105,7 @@ export class ProductsController {
   }
 
   // =================================================================
-  // ===  UPDATE VARIANT ==================================
+  // === 	UPDATE VARIANT ==================================
   // =================================================================
   /**
    * Update a specific variant by its ID
@@ -215,6 +215,34 @@ export class ProductsController {
         sortOrder,
       },
     );
+  }
+
+  // =================================================================
+  // === FETCH LANDING PAGE DATA =====================================
+  // =================================================================
+  /**
+   * Fetch all data needed for the landing page in a single call.
+   * - New Arrivals
+   * - Best Sellers
+   * - Featured Products (Selected by Us)
+   * - All Categories
+   */
+  @Get('landing-page')
+  async getLandingPageData() {
+    const [newArrivals, bestSellers, featuredProducts, categories] =
+      await Promise.all([
+        this.productsService.getNewArrivals(),
+        this.productsService.getBestSellers(),
+        this.productsService.getFeaturedProducts(),
+        this.productsService.getAllCategories(),
+      ]);
+
+    return {
+      newArrivals,
+      bestSellers,
+      featuredProducts,
+      categories,
+    };
   }
 
   // =================================================================
