@@ -459,7 +459,7 @@ export class ProductsService {
           createAt: 'DESC',
         },
         take: 5,
-        relations: ['category'], // Include category for context
+        relations: ['category', 'variants', 'variants.images'], // Include category for context
       });
 
       return newProducts;
@@ -488,7 +488,7 @@ export class ProductsService {
           name: 'ASC',
         },
         take: 5,
-        relations: ['category'], // Optionally include category details
+        relations: ['category', 'variants', 'variants.images'], // Optionally include category details
       });
 
       return bestSellers;
@@ -517,7 +517,7 @@ export class ProductsService {
           createAt: 'DESC',
         },
         take: 3,
-        relations: ['category'], // Optionally include category details
+        relations: ['category', 'variants', 'variants.images'], // Optionally include category details
       });
 
       return featuredProducts;
