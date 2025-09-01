@@ -56,6 +56,9 @@ export class Product {
   @Column({ default: false })
   trending?: boolean;
 
+  @Column({ type: 'simple-array', nullable: true })
+  tags?: string[];
+
   @Column({ default: new Date().toLocaleDateString() })
   createAt?: string;
 

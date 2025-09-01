@@ -1,26 +1,101 @@
-import { Injectable } from '@nestjs/common';
+/* eslint-disable prettier/prettier */
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserRepository } from './repositories/user.repository';
+import { User } from './entities/user.entity';
+import { FindManyOptions, ILike } from 'typeorm';
 
 @Injectable()
 export class UsersService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  constructor(private readonly userRepository: UserRepository) {}
+
+  // ✅ Create user with try/catch
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    try {
+      const user = await this.userRepository.create({
+        ...createUserDto,
+        created_at: new Date(),
+      });
+      return user;
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Failed to create user: ${error.message}`,
+      );
+    }
   }
 
-  findAll() {
-    return `This action returns all users`;
+  // ✅ Find all with pagination + filters
+  async findAll(
+    page = 1,
+    limit = 10,
+    filters?: {
+      email?: string;
+      username?: string;
+      status?: string;
+      role?: string;
+    },
+  ): Promise<{ data: User[]; total: number; page: number; limit: number }> {
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+    if (filters?.email) where.email = ILike(`%${filters.email}%`);
+    if (filters?.username) where.username = ILike(`%${filters.username}%`);
+    if (filters?.status) where.status = filters.status;
+    if (filters?.role) where.role = filters.role;
+
+    const options: FindManyOptions<User> = {
+      where,
+      skip,
+      take: limit,
+      order: { created_at: 'DESC' },
+    };
+
+    const [data, total] =
+      await this.userRepository.findAndCountWithPagination(options);
+
+    return { data, total, page, limit };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  // ✅ Find by ID
+  async findOne(id: string): Promise<User> {
+    const user = await this.userRepository.findOne({ id });
+    if (!user) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+    return user;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  // ✅ Find by Email
+  async findByEmail(email: string): Promise<User> {
+    const user = await this.userRepository.findOne({ email });
+    if (!user) {
+      throw new NotFoundException(`User with email ${email} not found`);
+    }
+    return user;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  // ✅ Update with try/catch
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+    try {
+      const user = await this.userRepository.findOneAndUpdate(
+        { id },
+        updateUserDto,
+      );
+      return user;
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Failed to update user with id ${id}: ${error.message}`,
+      );
+    }
+  }
+
+  // ✅ Delete
+  async remove(id: string): Promise<void> {
+    await this.userRepository.findOneAndDelete({ id });
   }
 }

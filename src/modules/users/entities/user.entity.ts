@@ -20,19 +20,22 @@ export class User {
   email: string;
 
   @Column({ type: 'text', nullable: true })
-  username: string;
-
-  @Column()
-  cin: string;
+  username?: string;
 
   @Column({ nullable: true })
-  firstName: string;
+  cin?: string;
 
   @Column({ nullable: true })
-  lastName: string;
+  image?: string;
 
   @Column({ nullable: true })
-  tel: number;
+  firstName?: string;
+
+  @Column({ nullable: true })
+  lastName?: string;
+
+  @Column({ nullable: true })
+  tel?: number;
 
   @Column()
   password: string;
@@ -41,26 +44,32 @@ export class User {
   role: 'admin' | 'client';
 
   @Column({ nullable: true })
-  primaryAddress: string;
+  primaryAddress?: string;
 
   @Column({ default: 'Active' })
-  status: string;
+  status?: string;
 
   @Column({ nullable: true })
   created_at: Date;
 
   @OneToMany(() => Address, (address) => address.user, { onDelete: 'CASCADE' })
   @JoinColumn()
-  addressList: Address[];
+  addressList?: Address[];
 
   @OneToMany(() => Order, (order) => order.user)
   @JoinColumn()
-  orders: Order[];
+  orders?: Order[];
 
   @OneToMany(() => Review, (rec) => rec.user, { onDelete: 'CASCADE' })
   @JoinColumn()
-  reviews: Review[];
+  reviews?: Review[];
 
   @OneToMany(() => StockMovement, (stockMovement) => stockMovement.user)
-  stockMovements: StockMovement[];
+  stockMovements?: StockMovement[];
+
+  @Column({ nullable: true })
+  provider?: string; // e.g. 'local', 'google', 'facebook'
+
+  @Column({ nullable: true })
+  providerId?: string; // e.g. Google/Facebook user ID
 }

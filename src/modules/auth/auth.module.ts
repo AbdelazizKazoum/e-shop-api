@@ -5,6 +5,11 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './stratigies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { jwtConstants } from 'src/shared/constants/jwt.constants';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
+import { UsersModule } from '../users/users.module';
+import { StorageModule } from '../storage/storage.module';
+import { R2Service } from '../storage/r2.service';
 
 @Module({
   imports: [
@@ -17,9 +22,11 @@ import { jwtConstants } from 'src/shared/constants/jwt.constants';
         ? { expiresIn: jwtConstants.jwtExpirationTime }
         : undefined,
     }),
+    UsersModule,
+    StorageModule,
   ],
   exports: [PassportModule, JwtModule, JwtAuthGuard],
-  controllers: [],
-  providers: [JwtStrategy, JwtAuthGuard],
+  controllers: [AuthController],
+  providers: [JwtStrategy, JwtAuthGuard, AuthService, R2Service],
 })
 export class AuthModule {}
