@@ -174,6 +174,15 @@ export class ProductsController {
   }
 
   /**
+   * Get a product by its name.
+   * - Throws a NotFoundException if the product is not found.
+   */
+  @Get('name/:name')
+  async getProductByName(@Param('name') name: string) {
+    return this.productsService.getProductByName(name);
+  }
+
+  /**
    * Fetch all products with pagination and filters
    */
   @Get('client')

@@ -76,6 +76,25 @@ export class ProductsService {
   }
 
   /**
+   * Get a product by its name.
+   * - Throws a NotFoundException if the product is not found.
+   */
+  async getProductByName(name: string): Promise<Product> {
+    console.log('🚀 ~ ProductsService ~ getProductByName ~ name:', name);
+
+    const product = await this.productRepository.findOne(
+      { name },
+      { relations: ['category', 'variants', 'variants.images'] },
+    );
+    console.log('🚀 ~ ProductsService ~ getProductByName ~ product:', product);
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    return product;
+  }
+
+  /**
    * Create multiple variants for a product.
    * - Finds the product by ID.
    * - For each variant, creates the variant entity and uploads its images.
@@ -535,12 +554,14 @@ export class ProductsService {
    * - Throws if the product is not found.
    */
   async getProductById(id: string): Promise<Product> {
+    console.log('🚀 ~ ProductsService ~ getProductById ~ id:', id);
     const product = await this.productRepository.findOne(
       { id },
       {
         relations: ['category', 'variants', 'variants.images', 'reviews'],
       },
     );
+    console.log('🚀 ~ ProductsService ~ getProductById ~ product:', product);
 
     if (!product) {
       throw new NotFoundException('Product not found');
