@@ -10,6 +10,7 @@ import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../users/entities/user.entity';
+import { AuthResponseDto } from './dto/Login-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -19,9 +20,7 @@ export class AuthService {
   ) {}
 
   // ✅ Register user (local strategy)
-  async register(
-    registerDto: RegisterDto,
-  ): Promise<{ user: User; access_token: string; refresh_token: string }> {
+  async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
     const existingUser = await this.usersService
       .findByEmail(registerDto.email)
       .catch(() => null);
@@ -43,9 +42,7 @@ export class AuthService {
   }
 
   // ✅ Login user (local strategy)
-  async login(
-    loginDto: LoginDto,
-  ): Promise<{ user: User; access_token: string; refresh_token: string }> {
+  async login(loginDto: LoginDto): Promise<AuthResponseDto> {
     const user = await this.usersService.findByEmail(loginDto.email);
     if (!user || user.provider !== 'local') {
       throw new UnauthorizedException('Invalid credentials');
@@ -70,7 +67,7 @@ export class AuthService {
     firstName?: string;
     lastName?: string;
     image?: string;
-  }): Promise<{ user: User; access_token: string; refresh_token: string }> {
+  }): Promise<AuthResponseDto> {
     let user = await this.usersService
       .findByEmail(profile.email)
       .catch(() => null);
@@ -110,32 +107,30 @@ export class AuthService {
   }
 
   // 🔑 Generate both access and refresh tokens
-  private generateTokens(user: User): {
-    access_token: string;
-    refresh_token: string;
-    user: User;
-  } {
+  private generateTokens(user: User): AuthResponseDto {
     const payload = {
       sub: user.id,
       email: user.email,
+      lastName: user.lastName,
+      firstName: user.firstName,
       role: user.role,
       provider: user.provider,
     };
 
     const access_token = this.jwtService.sign(payload, {
       secret: process.env.JWT_SECRET,
-      expiresIn: '15m', // access token expiry
+      expiresIn: '15m',
     });
 
     const refresh_token = this.jwtService.sign(payload, {
       secret: process.env.JWT_REFRESH_SECRET,
-      expiresIn: '7d', // refresh token expiry
+      expiresIn: '7d',
     });
 
-    return { user, access_token, refresh_token };
+    return { data: payload, access_token, refresh_token };
   }
 
-  async refreshToken(refreshToken: string) {
+  async refreshToken(refreshToken: string): Promise<AuthResponseDto> {
     try {
       const decoded = await this.jwtService.verifyAsync(refreshToken, {
         secret: process.env.JWT_REFRESH_SECRET,
@@ -144,17 +139,26 @@ export class AuthService {
       const user = await this.validateUser(decoded.email);
       if (!user) throw new UnauthorizedException('User not found');
 
-      const access_token = this.jwtService.sign(
-        { email: user.email, sub: user.id },
-        { secret: process.env.JWT_SECRET, expiresIn: '15m' },
-      );
+      const payload = {
+        sub: user.id,
+        email: user.email,
+        lastName: user.lastName,
+        firstName: user.firstName,
+        role: user.role,
+        provider: user.provider,
+      };
 
-      const new_refresh_token = this.jwtService.sign(
-        { email: user.email, sub: user.id },
-        { secret: process.env.JWT_REFRESH_SECRET, expiresIn: '7d' },
-      );
+      const access_token = this.jwtService.sign(payload, {
+        secret: process.env.JWT_SECRET,
+        expiresIn: '15m',
+      });
 
-      return { access_token, refresh_token: new_refresh_token };
+      const new_refresh_token = this.jwtService.sign(payload, {
+        secret: process.env.JWT_REFRESH_SECRET,
+        expiresIn: '7d',
+      });
+
+      return { data: payload, access_token, refresh_token: new_refresh_token };
     } catch (err) {
       throw new UnauthorizedException('Invalid refresh token');
     }
