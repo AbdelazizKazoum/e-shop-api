@@ -7,12 +7,14 @@ import {
   UseGuards,
   Request,
   UnauthorizedException,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { R2Service } from '../storage/r2.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('auth')
 export class AuthController {
@@ -23,15 +25,18 @@ export class AuthController {
 
   // ✅ Register
   @Post('register')
-  async register(@Body() registerDto: RegisterDto) {
-    // Returns { user, access_token, refresh_token }
+  @UseInterceptors(FileInterceptor('image')) // if you have a file field
+  async register(@Body('data') payload: string) {
+    const registerDto: RegisterDto = JSON.parse(payload);
     return this.authService.register(registerDto);
   }
 
   // ✅ Login
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
+    console.log('🚀 ~ AuthController ~ login ~ loginDto:', loginDto);
     // Returns { user, access_token, refresh_token }
+
     return this.authService.login(loginDto);
   }
 

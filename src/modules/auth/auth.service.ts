@@ -10,7 +10,7 @@ import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../users/entities/user.entity';
-import { AuthResponseDto } from './dto/Login-response.dto';
+import { AuthResponseDto } from './dto/login-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -52,6 +52,7 @@ export class AuthService {
       loginDto.password,
       user.password,
     );
+    console.log('🚀 ~ AuthService ~ login ~ isPasswordValid:', isPasswordValid);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
