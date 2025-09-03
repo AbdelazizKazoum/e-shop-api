@@ -80,8 +80,16 @@ export class OrdersService {
     });
   }
 
-  findAll() {
-    return `This action returns all orders`;
+  async findAll() {
+    return await this.orderRepository.findAll({
+      relations: [
+        'user',
+        'shippingAddress',
+        'items',
+        'items.variant',
+        'payment',
+      ],
+    });
   }
 
   findOne(id: number) {

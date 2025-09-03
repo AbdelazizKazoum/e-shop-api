@@ -1,19 +1,34 @@
-import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt.guard';
+import { GetUserOrNull } from 'src/shared/decorators/get-user.decorator';
+import { User } from '../users/entities/user.entity';
 
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
+  @UseGuards(OptionalJwtAuthGuard) // 👈 allows guest or auth
   @Post()
-  create(@Body() createOrderDto: CreateOrderDto) {
-    return this.ordersService.createOrder(createOrderDto);
+  async create(
+    @Body() dto: CreateOrderDto,
+    @GetUserOrNull() user: User | null,
+  ) {
+    return await this.ordersService.createOrder(dto, user?.id ?? null);
   }
 
   @Get()
-  findAll() {
-    return this.ordersService.findAll();
+  async findAll() {
+    return await this.ordersService.findAll();
   }
 
   @Get(':id')
