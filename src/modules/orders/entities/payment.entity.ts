@@ -18,7 +18,7 @@ export class Payment {
   order: Order;
 
   @Column()
-  methode: 'carte' | 'PayPal' | 'virement';
+  methode: 'credit_card' | 'paypal' | 'bank_transfer' | 'cash_on_delivery';
 
   @Column()
   status: 'pending' | 'fulfilled' | 'rejected';

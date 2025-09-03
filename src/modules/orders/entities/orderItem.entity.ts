@@ -27,9 +27,6 @@ export class OrderItem {
   variant: Variant;
 
   @Column()
-  prix_vente: number;
-
-  @Column()
   prix_unitaire: number;
 
   @Column()

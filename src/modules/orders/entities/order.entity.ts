@@ -35,7 +35,7 @@ export class Order {
   user: User;
 
   @Column()
-  date_commande: Date;
+  createdAt: Date;
 
   @Column({
     type: 'enum',
@@ -60,7 +60,7 @@ export class Order {
 
   @ManyToOne(() => Address)
   @JoinColumn()
-  address: Address;
+  shippingAddress: Address;
 
   @OneToOne(() => Payment, (payment) => payment.order, { nullable: true })
   @JoinColumn()

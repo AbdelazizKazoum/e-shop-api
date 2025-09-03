@@ -1,3 +1,4 @@
+import { StockService } from './../stock/stock.service';
 /* eslint-disable prettier/prettier */
 import {
   Injectable,
@@ -20,7 +21,7 @@ import { Variant } from './entities/variant.entity';
 import { UpdateVariantDto } from './dto/update-variant.dto';
 import { Image } from './entities/image.entity';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { ImageRepository } from './repositories/image.repository';
+import { Stock } from '../stock/entities/stock.entity';
 
 @Injectable()
 export class ProductsService {
@@ -32,7 +33,7 @@ export class ProductsService {
 
     private readonly variantRepository: VariantRepository,
     private readonly r2Service: R2Service,
-    private readonly imageRepository: ImageRepository,
+    private readonly stockService: StockService,
     private readonly dataSource: DataSource, // needed for transaction
   ) {}
 
@@ -120,16 +121,23 @@ export class ProductsService {
       for (let i = 0; i < variants.length; i++) {
         const variantData = variants[i];
 
-        // Create variant entity
-        const variant = queryRunner.manager.create('Variant', {
+        // 1. Create variant entity
+        const variant = queryRunner.manager.create(Variant, {
           color: variantData.color,
           size: variantData.size,
           qte: variantData.qte,
           product,
         });
-        const savedVariant = await queryRunner.manager.save('Variant', variant);
+        const savedVariant = await queryRunner.manager.save(Variant, variant);
 
-        // ✅ Find files belonging to this variant using JSON mapping
+        // 2. Init stock for the variant
+        const stock = queryRunner.manager.create(Stock, {
+          variant: savedVariant,
+          quantity: variantData.qte,
+        });
+        await queryRunner.manager.save(Stock, stock);
+
+        // 3. Handle the images for this variant
         const variantFiles = files.filter((file) =>
           variantData.images.includes(file.originalname),
         );
@@ -138,11 +146,11 @@ export class ProductsService {
           const key = `products/variants/${Date.now()}-${file.originalname}`;
           const imagePath = await this.r2Service.uploadFile(file, key);
 
-          const imageEntity = queryRunner.manager.create('Image', {
+          const imageEntity = queryRunner.manager.create(Image, {
             image: imagePath,
             variant: savedVariant,
           });
-          await queryRunner.manager.save('Image', imageEntity);
+          await queryRunner.manager.save(Image, imageEntity);
         }
       }
 
@@ -156,6 +164,7 @@ export class ProductsService {
       await queryRunner.release();
     }
   }
+
   /**
    * Fetch all products with pagination and filters.
    * - Supports filtering by name, brand, gender, rating, price range, and date range.
@@ -673,7 +682,14 @@ export class ProductsService {
       });
       const savedVariant = await queryRunner.manager.save(Variant, variant);
 
-      // 2. Handle the image uploads for the variant
+      // 2. Init stock for the variant
+      const stock = queryRunner.manager.create(Stock, {
+        variant: savedVariant,
+        quantity: variantData.qte,
+      });
+      await queryRunner.manager.save(Stock, stock);
+
+      // 3. Handle the image uploads for the variant
       if (files?.length > 0) {
         for (const file of files) {
           const key = `products/variants/${Date.now()}-${file.originalname}`;
@@ -689,12 +705,10 @@ export class ProductsService {
 
       await queryRunner.commitTransaction();
 
-      // 3. Return the newly created variant with its images
+      // 4. Return the newly created variant with its images
       return this.variantRepository.findOne(
-        {
-          id: savedVariant.id,
-        },
-        { relations: ['images'] },
+        { id: savedVariant.id },
+        { relations: ['images', 'stock'] }, // 👈 include stock relation
       );
     } catch (err) {
       await queryRunner.rollbackTransaction();

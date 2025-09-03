@@ -14,7 +14,10 @@ export class Address {
   id: string;
 
   @Column()
-  fullName: string;
+  firstName: string;
+
+  @Column()
+  lastName: string;
 
   @Column()
   address: string;
@@ -23,17 +26,27 @@ export class Address {
   city: string;
 
   @Column()
-  mobile: number;
+  phone: string;
+
+  @Column({ nullable: true })
+  email: string;
 
   @Column()
-  pincode: string;
+  zipCode: string;
+
+  @Column()
+  country: string;
 
   @Column({ default: 'active' })
   status: string;
 
+  @Column()
+  addressType: 'Home' | 'Work' | 'Other';
+
   @ManyToOne(() => User, (user) => user.addressList, {
     onDelete: 'CASCADE',
+    nullable: true,
   })
-  @JoinColumn()
-  user: User;
+  @JoinColumn({})
+  user?: User;
 }
