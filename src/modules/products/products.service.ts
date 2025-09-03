@@ -12,7 +12,6 @@ import { Product } from './entities/product.entity';
 import { Category } from './entities/category.entity';
 import { CategoryRepository } from './repositories/category.repository';
 import { VariantRepository } from './repositories/variant.repository';
-import { ImageRepository } from './repositories/image.repository';
 import { R2Service } from '../storage/r2.service';
 import { DataSource, In } from 'typeorm';
 import { File as MulterFile } from 'multer';
@@ -21,6 +20,7 @@ import { Variant } from './entities/variant.entity';
 import { UpdateVariantDto } from './dto/update-variant.dto';
 import { Image } from './entities/image.entity';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { ImageRepository } from './repositories/image.repository';
 
 @Injectable()
 export class ProductsService {
@@ -31,8 +31,8 @@ export class ProductsService {
     private readonly categoryRepository: CategoryRepository, // inject this
 
     private readonly variantRepository: VariantRepository,
-    private readonly imageRepository: ImageRepository,
     private readonly r2Service: R2Service,
+    private readonly imageRepository: ImageRepository,
     private readonly dataSource: DataSource, // needed for transaction
   ) {}
 
@@ -107,8 +107,6 @@ export class ProductsService {
     variants: CreateVariantDto[],
     files: MulterFile[],
   ) {
-    console.log('🚀 ~ ProductsService ~ createVariants ~ files:', files);
-
     const product = await this.productRepository.findOne({ id: productId });
     if (!product) {
       throw new NotFoundException('Product not found');
@@ -313,11 +311,6 @@ export class ProductsService {
     page: number;
     limit: number;
   }> {
-    console.log(
-      '🚀 ~ ProductsService ~ getAllProductsFilteredAndPaginatedClient ~ categories:',
-      filters.categories,
-    );
-
     try {
       const query = this.productRepository['productRepository']
         .createQueryBuilder('product')

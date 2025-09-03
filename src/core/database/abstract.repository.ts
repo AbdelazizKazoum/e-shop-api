@@ -1,14 +1,18 @@
 /* eslint-disable prettier/prettier */
-import { FindOptionsWhere, Repository, FindManyOptions } from 'typeorm';
+import {
+  FindOptionsWhere,
+  Repository,
+  FindManyOptions,
+  DeepPartial,
+} from 'typeorm';
 import { AbstractEntity } from './abstract.entity';
 import { NotFoundException } from '@nestjs/common';
 
 export abstract class AbstractRepository<T extends AbstractEntity<T>> {
   constructor(protected readonly entityRepository: Repository<T>) {}
 
-  async create(entity: Omit<T, 'id'>): Promise<T> {
-    const newEntity = this.entityRepository.create(entity as T);
-
+  async create(entity: DeepPartial<T>): Promise<T> {
+    const newEntity = this.entityRepository.create(entity);
     return this.entityRepository.save(newEntity);
   }
 

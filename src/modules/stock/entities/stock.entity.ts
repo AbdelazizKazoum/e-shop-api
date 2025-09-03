@@ -6,7 +6,7 @@ import {
   OneToOne,
   JoinColumn,
 } from 'typeorm';
-import { Variant } from './variant.entity';
+import { Variant } from '../../products/entities/variant.entity';
 
 @Entity()
 export class Stock {
