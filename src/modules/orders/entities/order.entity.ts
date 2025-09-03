@@ -34,7 +34,7 @@ export class Order {
   @JoinColumn()
   user: User;
 
-  @Column()
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
   @Column({

@@ -31,7 +31,7 @@ export class OrdersService {
         address: dto.shippingAddress.address,
         city: dto.shippingAddress.city,
         country: dto.shippingAddress.country,
-        state: dto.shippingAddress.state,
+        // state: dto.shippingAddress.state,
         zipCode: dto.shippingAddress.zipCode,
         addressType: dto.shippingAddress.addressType,
         phone: dto.contactInfo.phone,
@@ -43,7 +43,7 @@ export class OrdersService {
       // 3. Create order
       const order = manager.create(Order, {
         user,
-        date_order: new Date(dto.orderDate),
+        // date_order: new Date(dto.orderDate),
         total: dto.totalAmount,
         status: OrderStatus.PENDING,
         paymentStatus: PaymentStatus.UNPAID,
@@ -85,8 +85,8 @@ export class OrdersService {
       relations: [
         'user',
         'shippingAddress',
-        'items',
-        'items.variant',
+        'details',
+        'details.variant',
         'payment',
       ],
     });

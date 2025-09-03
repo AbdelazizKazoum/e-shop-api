@@ -23,6 +23,7 @@ export class OrdersController {
     @Body() dto: CreateOrderDto,
     @GetUserOrNull() user: User | null,
   ) {
+    console.log('🚀 ~ OrdersController ~ create ~ dto:', dto);
     return await this.ordersService.createOrder(dto, user?.id ?? null);
   }
 

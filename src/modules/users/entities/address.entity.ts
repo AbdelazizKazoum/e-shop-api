@@ -37,9 +37,6 @@ export class Address {
   @Column()
   country: string;
 
-  @Column({ default: 'active' })
-  status: string;
-
   @Column()
   addressType: 'Home' | 'Work' | 'Other';
 
