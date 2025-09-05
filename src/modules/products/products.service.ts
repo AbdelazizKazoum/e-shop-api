@@ -1,4 +1,3 @@
-import { StockService } from './../stock/stock.service';
 /* eslint-disable prettier/prettier */
 import {
   Injectable,
@@ -22,6 +21,7 @@ import { UpdateVariantDto } from './dto/update-variant.dto';
 import { Image } from './entities/image.entity';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Stock } from '../stock/entities/stock.entity';
+import { StockService } from '../stock/stock.service';
 
 @Injectable()
 export class ProductsService {
