@@ -3,6 +3,7 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderRepository } from './repositories/order.repository';
@@ -126,6 +127,13 @@ export class OrdersService {
           'shippingAddress.firstName',
           'shippingAddress.lastName',
           'shippingAddress.email',
+          'shippingAddress.address',
+          'shippingAddress.city',
+          'shippingAddress.phone',
+          'shippingAddress.zipCode',
+          'shippingAddress.country',
+          'shippingAddress.addressType',
+
           'user.id',
           // 'user.name',
           'details.id',
@@ -199,6 +207,42 @@ export class OrdersService {
     } catch (error) {
       this.logger.error('Failed to fetch orders with filters', error.stack);
       throw new InternalServerErrorException('Failed to fetch orders');
+    }
+  }
+
+  // ✅ Update order (status and/or paymentStatus)
+  async updateOrder(
+    orderId: string,
+    updates: {
+      status?: OrderStatus;
+      paymentStatus?: PaymentStatus;
+    },
+  ): Promise<Order> {
+    try {
+      const order = await this.orderRepository.findOne({ id: orderId });
+
+      if (!order) {
+        throw new NotFoundException(`Order with id ${orderId} not found`);
+      }
+
+      // Update only allowed fields
+      if (updates.status) {
+        order.status = updates.status;
+      }
+      if (updates.paymentStatus) {
+        order.paymentStatus = updates.paymentStatus;
+      }
+
+      return await this.orderRepository.findOneAndUpdate(
+        { id: orderId },
+        order,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to update order with id ${orderId}`,
+        error.stack,
+      );
+      throw new InternalServerErrorException('Failed to update order');
     }
   }
 

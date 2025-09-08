@@ -11,6 +11,7 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../users/entities/user.entity';
 import { AuthResponseDto } from './dto/login-response.dto';
+import { jwtConstants } from 'src/shared/constants/jwt.constants';
 
 @Injectable()
 export class AuthService {
@@ -52,7 +53,6 @@ export class AuthService {
       loginDto.password,
       user.password,
     );
-    console.log('🚀 ~ AuthService ~ login ~ isPasswordValid:', isPasswordValid);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -119,12 +119,11 @@ export class AuthService {
     };
 
     const access_token = this.jwtService.sign(payload, {
-      secret: process.env.JWT_SECRET,
       expiresIn: '15m',
     });
 
     const refresh_token = this.jwtService.sign(payload, {
-      secret: process.env.JWT_REFRESH_SECRET,
+      secret: jwtConstants.jwtRefreshTokenSecret,
       expiresIn: '7d',
     });
 

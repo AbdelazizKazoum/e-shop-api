@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Query,
+  Patch,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -71,6 +72,18 @@ export class OrdersController {
       limit,
       filters,
     );
+  }
+
+  @Patch(':id')
+  async updateOrder(
+    @Param('id') id: string,
+    @Body()
+    body: {
+      status?: OrderStatus;
+      paymentStatus?: PaymentStatus;
+    },
+  ) {
+    return this.ordersService.updateOrder(id, body);
   }
 
   @Get(':id')
