@@ -8,7 +8,7 @@ import { CreateStockDto } from './dto/create-stock.dto';
 import { UpdateStockDto } from './dto/update-stock.dto';
 import { StockRepository } from './repositories/stock.repository';
 import { Stock } from './entities/stock.entity';
-import { EntityManager } from 'typeorm';
+import { EntityManager, In } from 'typeorm';
 
 @Injectable()
 export class StockService {
@@ -35,7 +35,6 @@ export class StockService {
     quantityToDecrease: number,
     manager: EntityManager,
   ): Promise<Stock> {
-    // Use the transaction's manager to find the stock
     const stock = await manager.findOne(Stock, {
       where: { variant: { id: variantId } },
       relations: ['variant'],
@@ -54,9 +53,8 @@ export class StockService {
     }
 
     stock.quantity -= quantityToDecrease;
-    stock.updated = new Date().toISOString(); // Use ISO string for consistency
+    stock.updated = new Date().toISOString();
 
-    // Use the transaction's manager to save the change
     return manager.save(stock);
   }
 
@@ -72,6 +70,63 @@ export class StockService {
       throw new NotFoundException(`Stock with id "${id}" not found`);
     }
     return stock;
+  }
+
+  /**
+   * Gets the available stock quantity for a specific variant.
+   * @param variantId The ID of the variant to check.
+   * @returns The available quantity.
+   */
+  async getStockQuantityByVariant(variantId: string): Promise<number> {
+    const stock = await this.stockRepository.findOne({
+      variant: { id: variantId },
+    });
+
+    if (!stock) {
+      throw new NotFoundException(
+        `Stock information for variant with ID "${variantId}" not found.`,
+      );
+    }
+
+    return stock.quantity;
+  }
+
+  /**
+   * Gets the stock quantities for an array of variant IDs.
+   * @param variantIds An array of variant IDs.
+   * @returns A map of variantId to its quantity. Variants not found in stock will have a quantity of 0.
+   */
+  async getQuantitiesForVariants(
+    variantIds: string[],
+  ): Promise<Record<string, number>> {
+    if (!variantIds || variantIds.length === 0) {
+      return {};
+    }
+
+    // Assuming the custom repository can handle a TypeORM 'find' query
+    const stocks = await this.stockRepository.findAll({
+      where: {
+        variant: {
+          id: In(variantIds),
+        },
+      },
+      relations: ['variant'],
+    });
+
+    // Create a map to hold the results, initializing all requested variants with 0
+    const quantityMap: Record<string, number> = {};
+    variantIds.forEach((id) => {
+      quantityMap[id] = 0; // Default to 0 if no stock record is found
+    });
+
+    // Populate the map with the actual quantities found in the database
+    stocks.forEach((stock) => {
+      if (stock.variant && stock.variant.id) {
+        quantityMap[stock.variant.id] = stock.quantity;
+      }
+    });
+
+    return quantityMap;
   }
 
   // ✅ Update stock by id

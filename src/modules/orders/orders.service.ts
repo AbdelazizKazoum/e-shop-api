@@ -78,7 +78,7 @@ export class OrdersService {
         // Check for stock availability
         if (!variant.stock) {
           throw new InternalServerErrorException(
-            `Stock information is missing for product: "${variant.product.name}".`,
+            `Stock empty for product: "${variant.product.name}".`,
           );
         }
 
