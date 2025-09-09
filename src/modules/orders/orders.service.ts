@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -14,6 +15,7 @@ import { Order, OrderStatus, PaymentStatus } from './entities/order.entity';
 import { Variant } from '../products/entities/variant.entity';
 import { OrderItem } from './entities/orderItem.entity';
 import { Payment } from './entities/payment.entity';
+import { StockService } from '../stock/stock.service';
 
 @Injectable()
 export class OrdersService {
@@ -22,9 +24,10 @@ export class OrdersService {
   constructor(
     private readonly orderRepository: OrderRepository,
     private readonly dataSource: DataSource, // needed for transaction
+    private readonly stockService: StockService,
   ) {}
 
-  // order.service.ts
+  // ✅ Updated createOrder method with stock validation
   async createOrder(dto: CreateOrderDto, userId?: string) {
     return await this.dataSource.transaction(async (manager) => {
       // 1. Load user if logged in
@@ -57,12 +60,35 @@ export class OrdersService {
       });
       await manager.save(order);
 
-      // 4. Create items
+      // 4. Validate stock and create items
       for (const item of dto.items) {
-        const variant = await manager.findOneByOrFail(Variant, {
-          id: item.variantId,
+        // Find the variant and eagerly load its stock and product relations
+        const variant = await manager.findOne(Variant, {
+          where: { id: item.variantId },
+          relations: ['stock', 'product'], // Eagerly load stock and product
         });
 
+        // Handle case where variant doesn't exist
+        if (!variant) {
+          throw new NotFoundException(
+            `Product variant with ID "${item.variantId}" not found.`,
+          );
+        }
+
+        // Check for stock availability
+        if (!variant.stock) {
+          throw new InternalServerErrorException(
+            `Stock information is missing for product: "${variant.product.name}".`,
+          );
+        }
+
+        if (variant.stock.quantity < item.quantity) {
+          throw new BadRequestException(
+            `Out of stock for "${variant.product.name}" (Size: ${variant.size}, Color: ${variant.color}). Only ${variant.stock.quantity} left.`,
+          );
+        }
+
+        // If stock is available, proceed to create the order item
         const orderItem = manager.create(OrderItem, {
           order,
           variant,
@@ -218,32 +244,64 @@ export class OrdersService {
       paymentStatus?: PaymentStatus;
     },
   ): Promise<Order> {
-    try {
-      const order = await this.orderRepository.findOne({ id: orderId });
+    // Use a transaction to ensure atomicity
+    return this.dataSource.transaction(async (manager) => {
+      try {
+        // Find the order with all its items and their variants
+        const order = await manager.findOne(Order, {
+          where: { id: orderId },
+          relations: ['details', 'details.variant'],
+        });
 
-      if (!order) {
-        throw new NotFoundException(`Order with id ${orderId} not found`);
-      }
+        if (!order) {
+          throw new NotFoundException(`Order with id ${orderId} not found`);
+        }
 
-      // Update only allowed fields
-      if (updates.status) {
-        order.status = updates.status;
-      }
-      if (updates.paymentStatus) {
-        order.paymentStatus = updates.paymentStatus;
-      }
+        const originalStatus = order.status;
 
-      return await this.orderRepository.findOneAndUpdate(
-        { id: orderId },
-        order,
-      );
-    } catch (error) {
-      this.logger.error(
-        `Failed to update order with id ${orderId}`,
-        error.stack,
-      );
-      throw new InternalServerErrorException('Failed to update order');
-    }
+        // Apply updates to the order object
+        if (updates.status) {
+          order.status = updates.status;
+        }
+        if (updates.paymentStatus) {
+          order.paymentStatus = updates.paymentStatus;
+        }
+
+        // --- CORE LOGIC: Check if status is changing to 'delivered' ---
+        if (
+          updates.status === OrderStatus.DELIVERED &&
+          originalStatus !== OrderStatus.DELIVERED
+        ) {
+          this.logger.log(
+            `Order ${orderId} status changed to DELIVERED. Updating stock...`,
+          );
+
+          // Iterate over each item in the order and decrease stock
+          for (const item of order.details) {
+            if (!item.variant || !item.variant.id) {
+              throw new InternalServerErrorException(
+                `Order item ${item.id} is missing variant information.`,
+              );
+            }
+            await this.stockService.decreaseStockForVariant(
+              item.variant.id,
+              item.quantite,
+              manager, // Pass the transaction manager to the service
+            );
+          }
+        }
+
+        // Save the updated order within the transaction
+        return await manager.save(order);
+      } catch (error) {
+        this.logger.error(
+          `Failed to update order with id ${orderId}`,
+          error.stack,
+        );
+        // Rethrow the original error to be handled by NestJS
+        throw error;
+      }
+    });
   }
 
   findOne(id: number) {

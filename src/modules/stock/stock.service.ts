@@ -1,9 +1,14 @@
 /* eslint-disable prettier/prettier */
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateStockDto } from './dto/create-stock.dto';
 import { UpdateStockDto } from './dto/update-stock.dto';
 import { StockRepository } from './repositories/stock.repository';
 import { Stock } from './entities/stock.entity';
+import { EntityManager } from 'typeorm';
 
 @Injectable()
 export class StockService {
@@ -16,6 +21,43 @@ export class StockService {
       createAt: new Date().toLocaleDateString(),
       updated: new Date().toLocaleDateString(),
     });
+  }
+
+  /**
+   * Decreases the stock quantity for a given variant.
+   * Designed to be used within a transaction.
+   * @param variantId The ID of the variant to update stock for.
+   * @param quantityToDecrease The amount to decrease the stock by.
+   * @param manager The EntityManager from the current transaction.
+   */
+  async decreaseStockForVariant(
+    variantId: string,
+    quantityToDecrease: number,
+    manager: EntityManager,
+  ): Promise<Stock> {
+    // Use the transaction's manager to find the stock
+    const stock = await manager.findOne(Stock, {
+      where: { variant: { id: variantId } },
+      relations: ['variant'],
+    });
+
+    if (!stock) {
+      throw new NotFoundException(
+        `Stock for variant with ID "${variantId}" not found.`,
+      );
+    }
+
+    if (stock.quantity < quantityToDecrease) {
+      throw new BadRequestException(
+        `Insufficient stock for variant "${stock.variant.id}". Available: ${stock.quantity}, Requested: ${quantityToDecrease}`,
+      );
+    }
+
+    stock.quantity -= quantityToDecrease;
+    stock.updated = new Date().toISOString(); // Use ISO string for consistency
+
+    // Use the transaction's manager to save the change
+    return manager.save(stock);
   }
 
   // ✅ Get all stocks

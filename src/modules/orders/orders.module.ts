@@ -11,6 +11,7 @@ import { jwtConstants } from 'src/shared/constants/jwt.constants';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { JwtStrategy } from '../auth/stratigies/jwt.strategy';
+import { StockModule } from '../stock/stock.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { JwtStrategy } from '../auth/stratigies/jwt.strategy';
         ? { expiresIn: jwtConstants.jwtExpirationTime }
         : undefined,
     }),
+    StockModule,
   ],
   controllers: [OrdersController],
   providers: [OrdersService, OrderRepository, JwtAuthGuard, JwtStrategy],
