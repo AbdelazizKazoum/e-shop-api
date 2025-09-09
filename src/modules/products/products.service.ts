@@ -128,16 +128,20 @@ export class ProductsService {
           qte: variantData.qte,
           product,
         });
-        const savedVariant = await queryRunner.manager.save(Variant, variant);
+        let savedVariant = await queryRunner.manager.save(Variant, variant);
 
         // 2. Init stock for the variant
         const stock = queryRunner.manager.create(Stock, {
           variant: savedVariant,
           quantity: variantData.qte,
         });
-        await queryRunner.manager.save(Stock, stock);
+        const savedStock = await queryRunner.manager.save(Stock, stock);
 
-        // 3. Handle the images for this variant
+        // 3. Assign stock back to variant (important!)
+        savedVariant.stock = savedStock;
+        savedVariant = await queryRunner.manager.save(Variant, savedVariant);
+
+        // 4. Handle the images for this variant
         const variantFiles = files.filter((file) =>
           variantData.images.includes(file.originalname),
         );
@@ -399,11 +403,6 @@ export class ProductsService {
       }
 
       if (filters.categories && filters.categories.length > 0) {
-        console.log(
-          '🚀 ~ ProductsService ~ getAllProductsFilteredAndPaginatedClient ~ categories:',
-          filters.categories,
-        );
-
         query.andWhere('category.displayText IN (:...categories)', {
           categories: filters.categories,
         });
@@ -560,10 +559,16 @@ export class ProductsService {
     const product = await this.productRepository.findOne(
       { id },
       {
-        relations: ['category', 'variants', 'variants.images', 'reviews'],
+        relations: [
+          'category',
+          'variants',
+          'variants.images',
+          'reviews',
+          'variants.stock',
+          // 'variants.stock.quantity',
+        ],
       },
     );
-    console.log('🚀 ~ ProductsService ~ getProductById ~ product:', product);
 
     if (!product) {
       throw new NotFoundException('Product not found');
@@ -674,22 +679,26 @@ export class ProductsService {
 
     try {
       // 1. Create the variant entity
-      const variant = queryRunner.manager.create(Variant, {
+      let variant = queryRunner.manager.create(Variant, {
         color: variantData.color,
         size: variantData.size,
         qte: variantData.qte,
         product,
       });
-      const savedVariant = await queryRunner.manager.save(Variant, variant);
+      variant = await queryRunner.manager.save(Variant, variant);
 
       // 2. Init stock for the variant
       const stock = queryRunner.manager.create(Stock, {
-        variant: savedVariant,
+        variant,
         quantity: variantData.qte,
       });
-      await queryRunner.manager.save(Stock, stock);
+      const savedStock = await queryRunner.manager.save(Stock, stock);
 
-      // 3. Handle the image uploads for the variant
+      // 3. Assign stock back to the variant
+      variant.stock = savedStock;
+      variant = await queryRunner.manager.save(Variant, variant);
+
+      // 4. Handle the image uploads for the variant
       if (files?.length > 0) {
         for (const file of files) {
           const key = `products/variants/${Date.now()}-${file.originalname}`;
@@ -697,7 +706,7 @@ export class ProductsService {
 
           const imageEntity = queryRunner.manager.create(Image, {
             image: imagePath,
-            variant: savedVariant,
+            variant,
           });
           await queryRunner.manager.save(Image, imageEntity);
         }
@@ -705,10 +714,10 @@ export class ProductsService {
 
       await queryRunner.commitTransaction();
 
-      // 4. Return the newly created variant with its images
+      // 5. Return the newly created variant with its stock + images
       return this.variantRepository.findOne(
-        { id: savedVariant.id },
-        { relations: ['images', 'stock'] }, // 👈 include stock relation
+        { id: variant.id },
+        { relations: ['images', 'stock'] },
       );
     } catch (err) {
       await queryRunner.rollbackTransaction();
