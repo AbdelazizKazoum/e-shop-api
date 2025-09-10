@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 // src/database/database.module.ts
 
 import { DynamicModule, Module } from '@nestjs/common';

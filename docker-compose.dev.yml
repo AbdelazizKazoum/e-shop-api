@@ -34,7 +34,7 @@ services:
       - R2_PUBLIC_URL=https://pub-c1f95dd9de0040bca80754b566c4d7d1.r2.dev
     depends_on:
       - db
-    command: ['nodemon', '--watch', 'src', '--exec', 'nest', 'start', '--watch']
+    command: ['npm', 'run', 'start:dev']
   db:
     image: mysql:8.4
     restart: unless-stopped
