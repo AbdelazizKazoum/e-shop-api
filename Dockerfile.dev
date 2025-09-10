@@ -1,0 +1,17 @@
+FROM node:20-alpine
+
+WORKDIR /usr/src/app
+
+# Install dependencies only when needed
+COPY package.json package-lock.json* ./
+RUN npm install
+
+# Copy the rest of your source code
+COPY . .
+
+# Install nodemon and nest CLI globally for dev
+RUN npm install -g @nestjs/cli nodemon
+
+EXPOSE 5000
+
+CMD ["nodemon", "--watch", "src", "--exec", "nest", "start", "--watch"]

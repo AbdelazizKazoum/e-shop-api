@@ -1,0 +1,50 @@
+version: '3.8'
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - '5000:5000'
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      # --- Database Configuration ---
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USERNAME=root
+      - DB_PASSWORD=051688
+      - DB_DATABASE=e-shop
+
+      # --- JWT Configuration ---
+      - JWT_SECRET=your_super_secret_key_that_is_long_and_random
+      - JWT_EXPIRATION_TIME=3600s
+
+      # --- CORS Configuration ---
+      - CORS_ORIGIN=http://localhost:3000,http://localhost:4000
+
+      # --- Cloudflare R2 Configuration ---
+      - R2_TOKEN=TDqCvEvO4aV_PVTqdWa0ss6cho2OBkVplv0AfL5b
+      - R2_BUCKET_NAME=e-shop
+      - R2_ENDPOINT=https://0facffd5bdf34b1151b2f5a0ecdc46e6.r2.cloudflarestorage.com
+      - R2_ACCESS_KEY_ID=01ab4b68f828fab15a0ddda39085802e
+      - R2_SECRET_ACCESS_KEY=0402b5d29ec03366d209d998cbdedb64e41cdc282d11b62957432d556c0be252
+      - R2_PUBLIC_URL=https://pub-c1f95dd9de0040bca80754b566c4d7d1.r2.dev
+    depends_on:
+      - db
+    command: ['nodemon', '--watch', 'src', '--exec', 'nest', 'start', '--watch']
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: '051688'
+      MYSQL_DATABASE: e-shop
+
+    ports:
+      - '3306:3306'
+    volumes:
+      - db_data:/var/lib/mysql
+volumes:
+  db_data:
