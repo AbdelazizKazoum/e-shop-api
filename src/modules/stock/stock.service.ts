@@ -8,7 +8,7 @@ import { CreateStockDto } from './dto/create-stock.dto';
 import { UpdateStockDto } from './dto/update-stock.dto';
 import { StockRepository } from './repositories/stock.repository';
 import { Stock } from './entities/stock.entity';
-import { EntityManager, In } from 'typeorm';
+import { EntityManager, In, Like, Between } from 'typeorm';
 
 @Injectable()
 export class StockService {
@@ -56,6 +56,73 @@ export class StockService {
     stock.updated = new Date().toISOString();
 
     return manager.save(stock);
+  }
+
+  /**
+   * Retrieves a paginated and filtered list of stocks.
+   * @param page - The page number for pagination.
+   * @param limit - The number of items per page.
+   * @param filters - An object containing filter criteria:
+   *   - `productName` (optional): Filter by the name of the product associated with the stock.
+   *   - `minQte` (optional): Filter for stock with a quantity greater than or equal to this value.
+   *   - `maxQte` (optional): Filter for stock with a quantity less than or equal to this value.
+   *   - `sortBy` (optional): Sort the results by 'newest' or 'oldest' creation date.
+   * @returns A promise that resolves to an object containing the paginated stock data, total count, page number, and limit.
+   */
+  async findAllWithFiltersAndPagination(
+    page: number = 1,
+    limit: number = 10,
+    filters: {
+      productName?: string;
+      minQte?: number;
+      maxQte?: number;
+      sortBy?: 'newest' | 'oldest';
+    },
+  ): Promise<{
+    data: Stock[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
+    const { productName, minQte, maxQte, sortBy } = filters;
+
+    const where: any = {};
+
+    if (productName) {
+      where.variant = { product: { name: Like(`%${productName}%`) } };
+    }
+
+    if (minQte && maxQte) {
+      where.quantity = Between(minQte, maxQte);
+    } else if (minQte) {
+      where.quantity = Between(minQte, 10000); // Assuming a large enough max value
+    } else if (maxQte) {
+      where.quantity = Between(0, maxQte);
+    }
+
+    const order: any = {};
+    if (sortBy === 'newest') {
+      order.createAt = 'DESC';
+    } else if (sortBy === 'oldest') {
+      order.createAt = 'ASC';
+    }
+
+    const [data, total] = await this.stockRepository.findAndCountWithPagination(
+      {
+        where,
+        order,
+        take: limit,
+        skip: (page - 1) * limit,
+        relations: ['variant', 'variant.product'],
+      },
+    );
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+    };
   }
 
   // ✅ Get all stocks

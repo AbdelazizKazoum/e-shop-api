@@ -118,10 +118,6 @@ export class ProductsController {
     @UploadedFiles() files: MulterFile[],
   ) {
     const updateVariantDto: UpdateVariantDto = JSON.parse(data);
-    console.log(
-      '🚀 ~ ProductsController ~ updateVariant ~ updateVariantDto:',
-      updateVariantDto,
-    );
 
     return this.productsService.updateVariant(
       variantId,

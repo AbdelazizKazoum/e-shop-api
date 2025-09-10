@@ -13,7 +13,7 @@ import { Category } from './entities/category.entity';
 import { CategoryRepository } from './repositories/category.repository';
 import { VariantRepository } from './repositories/variant.repository';
 import { R2Service } from '../storage/r2.service';
-import { DataSource, In } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { File as MulterFile } from 'multer';
 import { CreateVariantDto } from './dto/create-variant.dto';
 import { Variant } from './entities/variant.entity';
@@ -743,33 +743,33 @@ export class ProductsService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
-    // 1. Find the variant to update
-    const variant = (await queryRunner.manager.findOne('Variant', {
-      where: { id: variantId },
-    })) as Variant;
-
-    if (!variant) {
-      throw new NotFoundException(`Variant with ID "${variantId}" not found`);
-    }
-
     try {
-      // 2. Handle image deletions if any are specified
-      if (updateVariantDto.deletedImages?.length > 0) {
-        // First, get the image entities to find their keys for R2 deletion
-        const imagesToDelete = await queryRunner.manager.find(Image, {
-          where: { id: In(updateVariantDto.deletedImages) },
-        });
+      // 1. Find the variant to update, making sure to load its images
+      const variant = await queryRunner.manager.findOne(Variant, {
+        where: { id: variantId },
+        relations: ['images'],
+      });
 
-        // Delete files from R2 storage
+      if (!variant) {
+        throw new NotFoundException(`Variant with ID "${variantId}" not found`);
+      }
+
+      // 2. Handle image deletions
+      if (updateVariantDto.deletedImages?.length > 0) {
+        const imagesToDelete = variant.images.filter((img) =>
+          updateVariantDto.deletedImages.includes(img.id),
+        );
+
+        // Delete files from R2 storage first
         for (const image of imagesToDelete) {
-          // Assuming the 'image' property stores the R2 key
           await this.r2Service.deleteFile(image.image);
         }
 
-        // Then, perform a bulk delete from the database
-        await queryRunner.manager.delete(Image, {
-          id: In(updateVariantDto.deletedImages),
-        });
+        // Now, filter the variant's images array to remove the deleted ones.
+        // The cascade on save will handle the database deletion.
+        variant.images = variant.images.filter(
+          (img) => !updateVariantDto.deletedImages.includes(img.id),
+        );
       }
 
       // 3. Handle new image uploads
@@ -780,30 +780,25 @@ export class ProductsService {
 
           const newImage = queryRunner.manager.create(Image, {
             image: imagePath,
-            variant: variant,
+            // variant is not needed here as it will be set by the cascade
           });
-          await queryRunner.manager.save(Image, newImage);
+          variant.images.push(newImage); // Add the new image to the array
         }
       }
 
       // 4. Update variant's own properties
-      queryRunner.manager.merge(Variant, variant, {
-        color: updateVariantDto.color,
-        size: updateVariantDto.size,
-        qte: updateVariantDto.qte,
-      });
-      await queryRunner.manager.save(Variant, variant);
+      variant.color = updateVariantDto.color;
+      variant.size = updateVariantDto.size;
+      variant.qte = updateVariantDto.qte;
 
-      // 5. Commit the transaction
+      // 5. Save the variant. TypeORM will now cascade the changes to the images.
+      // It will delete the images removed from the array and insert the new ones.
+      const updatedVariant = await queryRunner.manager.save(Variant, variant);
+
+      // 6. Commit the transaction
       await queryRunner.commitTransaction();
 
-      // Return the fully updated variant with its relations
-      return this.variantRepository.findOne(
-        {
-          id: variantId,
-        },
-        { relations: ['images'] },
-      );
+      return updatedVariant;
     } catch (err) {
       // If anything fails, roll back the entire transaction
       await queryRunner.rollbackTransaction();

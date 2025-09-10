@@ -67,13 +67,11 @@ export class Product {
   category: Category;
 
   @OneToMany(() => Variant, (detail) => detail.product, {
-    onDelete: 'CASCADE',
+    cascade: true,
   })
-  @JoinColumn()
   variants?: Variant[];
 
-  @OneToMany(() => Review, (review) => review.product)
-  @JoinColumn()
+  @OneToMany(() => Review, (review) => review.product, { cascade: true })
   reviews?: Review[];
 
   @Column({ type: 'float', default: 0 })

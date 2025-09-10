@@ -36,9 +36,9 @@ export class Variant {
   product: Product;
 
   @OneToMany(() => Image, (img) => img.variant, {
-    onDelete: 'CASCADE',
+    cascade: true,
+    eager: true,
   })
-  @JoinColumn()
   images: Image[];
 
   @OneToMany(() => StockMovement, (movement) => movement.productDetail)
@@ -49,7 +49,6 @@ export class Variant {
   @JoinColumn()
   orderItems?: SupplyOrderItem[];
 
-  @OneToOne(() => Stock, (stock) => stock.variant)
-  @JoinColumn()
+  @OneToOne(() => Stock, (stock) => stock.variant, { cascade: true })
   stock?: Stock;
 }
