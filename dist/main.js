@@ -15,7 +15,7 @@ async function bootstrap() {
     });
     app.useGlobalPipes(new common_1.ValidationPipe({ whitelist: true, transform: true }));
     app.useLogger(app.get(nestjs_pino_1.Logger));
-    await app.listen(process.env.PORT ?? 5000);
+    await app.listen(process.env.PORT ?? 5000, '0.0.0.0');
 }
 bootstrap();
 //# sourceMappingURL=main.js.map
