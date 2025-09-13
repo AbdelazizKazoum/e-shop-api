@@ -610,6 +610,7 @@ let ProductsService = ProductsService_1 = class ProductsService {
             return category;
         }
         catch (error) {
+            console.log('🚀 ~ ProductsService ~ createCategory ~ error:', error);
             this.logger.error('Failed to create category', error.message);
             if (data.imageUrl) {
                 try {
