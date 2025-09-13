@@ -942,6 +942,8 @@ export class ProductsService {
 
       return category;
     } catch (error) {
+      console.log('🚀 ~ ProductsService ~ createCategory ~ error:', error);
+
       this.logger.error('Failed to create category', error.message);
 
       // ✅ If the image was uploaded but category creation fails, delete the image
