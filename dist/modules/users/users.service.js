@@ -40,6 +40,12 @@ let UsersService = class UsersService {
             where.status = filters.status;
         if (filters?.role)
             where.role = filters.role;
+        if (filters?.provider)
+            where.provider = filters.provider;
+        if (filters?.firstName)
+            where.firstName = (0, typeorm_1.ILike)(`%${filters.firstName}%`);
+        if (filters?.lastName)
+            where.lastName = (0, typeorm_1.ILike)(`%${filters.lastName}%`);
         const options = {
             where,
             skip,
@@ -49,15 +55,19 @@ let UsersService = class UsersService {
         const [data, total] = await this.userRepository.findAndCountWithPagination(options);
         return { data, total, page, limit };
     }
-    async findOne(id) {
-        const user = await this.userRepository.findOne({ id });
+    async findOne(id, relations = []) {
+        const user = await this.userRepository.findOne({
+            id,
+        }, { relations });
         if (!user) {
             throw new common_1.NotFoundException(`User with id ${id} not found`);
         }
         return user;
     }
-    async findByEmail(email) {
-        const user = await this.userRepository.findOne({ email });
+    async findByEmail(email, relations = []) {
+        const user = await this.userRepository.findOne({
+            email,
+        }, { relations });
         if (!user) {
             throw new common_1.NotFoundException(`User with email ${email} not found`);
         }
@@ -65,10 +75,17 @@ let UsersService = class UsersService {
     }
     async update(id, updateUserDto) {
         try {
+            const existingUser = await this.userRepository.findOne({ id });
+            if (!existingUser) {
+                throw new common_1.NotFoundException(`User with id ${id} not found`);
+            }
             const user = await this.userRepository.findOneAndUpdate({ id }, updateUserDto);
             return user;
         }
         catch (error) {
+            if (error instanceof common_1.NotFoundException) {
+                throw error;
+            }
             throw new common_1.InternalServerErrorException(`Failed to update user with id ${id}: ${error.message}`);
         }
     }

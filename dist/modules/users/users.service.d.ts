@@ -11,14 +11,17 @@ export declare class UsersService {
         username?: string;
         status?: string;
         role?: string;
+        provider?: string;
+        firstName?: string;
+        lastName?: string;
     }): Promise<{
         data: User[];
         total: number;
         page: number;
         limit: number;
     }>;
-    findOne(id: string): Promise<User>;
-    findByEmail(email: string): Promise<User>;
+    findOne(id: string, relations?: string[]): Promise<User>;
+    findByEmail(email: string, relations?: string[]): Promise<User>;
     update(id: string, updateUserDto: UpdateUserDto): Promise<User>;
     remove(id: string): Promise<void>;
 }

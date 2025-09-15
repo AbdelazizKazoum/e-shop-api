@@ -38,6 +38,9 @@ export class UsersService {
       username?: string;
       status?: string;
       role?: string;
+      provider?: string;
+      firstName?: string;
+      lastName?: string;
     },
   ): Promise<{ data: User[]; total: number; page: number; limit: number }> {
     const skip = (page - 1) * limit;
@@ -47,6 +50,9 @@ export class UsersService {
     if (filters?.username) where.username = ILike(`%${filters.username}%`);
     if (filters?.status) where.status = filters.status;
     if (filters?.role) where.role = filters.role;
+    if (filters?.provider) where.provider = filters.provider;
+    if (filters?.firstName) where.firstName = ILike(`%${filters.firstName}%`);
+    if (filters?.lastName) where.lastName = ILike(`%${filters.lastName}%`);
 
     const options: FindManyOptions<User> = {
       where,
@@ -62,8 +68,13 @@ export class UsersService {
   }
 
   // ✅ Find by ID
-  async findOne(id: string): Promise<User> {
-    const user = await this.userRepository.findOne({ id });
+  async findOne(id: string, relations: string[] = []): Promise<User> {
+    const user = await this.userRepository.findOne(
+      {
+        id,
+      },
+      { relations },
+    );
     if (!user) {
       throw new NotFoundException(`User with id ${id} not found`);
     }
@@ -71,8 +82,13 @@ export class UsersService {
   }
 
   // ✅ Find by Email
-  async findByEmail(email: string): Promise<User> {
-    const user = await this.userRepository.findOne({ email });
+  async findByEmail(email: string, relations: string[] = []): Promise<User> {
+    const user = await this.userRepository.findOne(
+      {
+        email,
+      },
+      { relations },
+    );
     if (!user) {
       throw new NotFoundException(`User with email ${email} not found`);
     }
@@ -82,12 +98,21 @@ export class UsersService {
   // ✅ Update with try/catch
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     try {
+      // First, check if the user exists to provide a clear error message.
+      const existingUser = await this.userRepository.findOne({ id });
+      if (!existingUser) {
+        throw new NotFoundException(`User with id ${id} not found`);
+      }
+
       const user = await this.userRepository.findOneAndUpdate(
         { id },
         updateUserDto,
       );
       return user;
     } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
       throw new InternalServerErrorException(
         `Failed to update user with id ${id}: ${error.message}`,
       );
