@@ -8,7 +8,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRepository } from './repositories/user.repository';
 import { User } from './entities/user.entity';
-import { FindManyOptions, ILike } from 'typeorm';
+import { FindManyOptions, ILike, Between } from 'typeorm';
 
 @Injectable()
 export class UsersService {
@@ -38,19 +38,37 @@ export class UsersService {
       status?: string;
       role?: string;
       provider?: string;
-      firstName?: string;
-      lastName?: string;
+      customer?: string;
+      startDate?: string;
+      endDate?: string;
     },
   ): Promise<{ data: User[]; total: number; page: number; limit: number }> {
+    console.log('🚀 ~ UsersService ~ findAll ~ filters:', filters);
     const skip = (page - 1) * limit;
 
-    const where: any = {};
-    if (filters?.email) where.email = ILike(`%${filters.email}%`);
-    if (filters?.status) where.status = filters.status;
-    if (filters?.role) where.role = filters.role;
-    if (filters?.provider) where.provider = filters.provider;
-    if (filters?.firstName) where.firstName = ILike(`%${filters.firstName}%`);
-    if (filters?.lastName) where.lastName = ILike(`%${filters.lastName}%`);
+    const baseFilters: any = {};
+    if (filters?.email) baseFilters.email = ILike(`%${filters.email}%`);
+    if (filters?.status) baseFilters.status = filters.status;
+    if (filters?.role) baseFilters.role = filters.role;
+    if (filters?.provider) baseFilters.provider = filters.provider;
+
+    if (filters?.startDate && filters?.endDate) {
+      const startDate = new Date(filters.startDate);
+      const endDate = new Date(filters.endDate);
+      // To include the whole end day, set time to the end of the day
+      endDate.setHours(23, 59, 59, 999);
+      baseFilters.created_at = Between(startDate, endDate);
+    }
+
+    let where: any = baseFilters;
+
+    if (filters?.customer) {
+      const customerSearch = ILike(`%${filters.customer}%`);
+      where = [
+        { ...baseFilters, firstName: customerSearch },
+        { ...baseFilters, lastName: customerSearch },
+      ];
+    }
 
     const options: FindManyOptions<User> = {
       where,

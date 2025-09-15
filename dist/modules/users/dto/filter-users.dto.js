@@ -10,15 +10,25 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FilterUsersDto = void 0;
-const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
+const class_validator_1 = require("class-validator");
 class FilterUsersDto {
-    constructor() {
-        this.page = 1;
-        this.limit = 10;
-    }
 }
 exports.FilterUsersDto = FilterUsersDto;
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_transformer_1.Type)(() => Number),
+    (0, class_validator_1.Min)(1),
+    __metadata("design:type", Number)
+], FilterUsersDto.prototype, "page", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_transformer_1.Type)(() => Number),
+    (0, class_validator_1.Min)(1),
+    __metadata("design:type", Number)
+], FilterUsersDto.prototype, "limit", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
@@ -28,29 +38,30 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], FilterUsersDto.prototype, "username", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsEnum)(['Active', 'Inactive']),
-    __metadata("design:type", String)
 ], FilterUsersDto.prototype, "status", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsEnum)(['admin', 'client']),
+    (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], FilterUsersDto.prototype, "role", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
-    (0, class_transformer_1.Type)(() => Number),
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.Min)(1),
-    __metadata("design:type", Number)
-], FilterUsersDto.prototype, "page", void 0);
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], FilterUsersDto.prototype, "provider", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
-    (0, class_transformer_1.Type)(() => Number),
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.Min)(1),
-    __metadata("design:type", Number)
-], FilterUsersDto.prototype, "limit", void 0);
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], FilterUsersDto.prototype, "customer", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsDateString)(),
+    __metadata("design:type", String)
+], FilterUsersDto.prototype, "startDate", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsDateString)(),
+    __metadata("design:type", String)
+], FilterUsersDto.prototype, "endDate", void 0);
 //# sourceMappingURL=filter-users.dto.js.map

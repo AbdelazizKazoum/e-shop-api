@@ -1,33 +1,51 @@
 /* eslint-disable prettier/prettier */
-import { IsOptional, IsString, IsEnum, IsNumber, Min } from 'class-validator';
 import { Type } from 'class-transformer';
+import {
+  IsOptional,
+  IsString,
+  IsNumber,
+  Min,
+  IsDateString,
+} from 'class-validator';
 
 export class FilterUsersDto {
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  @Min(1)
+  page?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  @Min(1)
+  limit?: number;
+
   @IsOptional()
   @IsString()
   email?: string;
 
   @IsOptional()
   @IsString()
-  username?: string;
-
-  @IsOptional()
-  @IsEnum(['Active', 'Inactive'])
   status?: string;
 
   @IsOptional()
-  @IsEnum(['admin', 'client'])
-  role?: 'admin' | 'client';
+  @IsString()
+  role?: string;
 
   @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @Min(1)
-  page?: number = 1;
+  @IsString()
+  provider?: string;
 
   @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @Min(1)
-  limit?: number = 10;
+  @IsString()
+  customer?: string;
+
+  @IsOptional()
+  @IsDateString()
+  startDate?: string;
+
+  @IsOptional()
+  @IsDateString()
+  endDate?: string;
 }

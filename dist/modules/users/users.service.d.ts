@@ -11,8 +11,9 @@ export declare class UsersService {
         status?: string;
         role?: string;
         provider?: string;
-        firstName?: string;
-        lastName?: string;
+        customer?: string;
+        startDate?: string;
+        endDate?: string;
     }): Promise<{
         data: User[];
         total: number;
