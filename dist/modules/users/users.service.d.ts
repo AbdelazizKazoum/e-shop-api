@@ -8,7 +8,6 @@ export declare class UsersService {
     create(createUserDto: CreateUserDto): Promise<User>;
     findAll(page?: number, limit?: number, filters?: {
         email?: string;
-        username?: string;
         status?: string;
         role?: string;
         provider?: string;

@@ -26,9 +26,9 @@ export class UsersController {
 
   // ✅ Get All Users with Pagination + Filters
   @Get()
-  findAll(@Query() query: FilterUsersDto) {
+  async findAll(@Query() query: FilterUsersDto) {
     const { page, limit, ...filters } = query;
-    return this.usersService.findAll(page, limit, filters);
+    return await this.usersService.findAll(page, limit, filters);
   }
 
   // ✅ Get One by ID

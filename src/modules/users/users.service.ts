@@ -35,7 +35,6 @@ export class UsersService {
     limit = 10,
     filters?: {
       email?: string;
-      username?: string;
       status?: string;
       role?: string;
       provider?: string;
@@ -47,7 +46,6 @@ export class UsersService {
 
     const where: any = {};
     if (filters?.email) where.email = ILike(`%${filters.email}%`);
-    if (filters?.username) where.username = ILike(`%${filters.username}%`);
     if (filters?.status) where.status = filters.status;
     if (filters?.role) where.role = filters.role;
     if (filters?.provider) where.provider = filters.provider;

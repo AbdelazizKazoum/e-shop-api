@@ -34,8 +34,6 @@ let UsersService = class UsersService {
         const where = {};
         if (filters?.email)
             where.email = (0, typeorm_1.ILike)(`%${filters.email}%`);
-        if (filters?.username)
-            where.username = (0, typeorm_1.ILike)(`%${filters.username}%`);
         if (filters?.status)
             where.status = filters.status;
         if (filters?.role)
