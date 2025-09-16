@@ -644,6 +644,25 @@ let ProductsService = ProductsService_1 = class ProductsService {
             throw new common_1.InternalServerErrorException(error.message);
         }
     }
+    async getProductsByCategory(categorySearch) {
+        try {
+            const products = await this.productRepository['productRepository']
+                .createQueryBuilder('product')
+                .leftJoinAndSelect('product.category', 'category')
+                .leftJoinAndSelect('product.variants', 'variant')
+                .leftJoinAndSelect('variant.images', 'image')
+                .leftJoinAndSelect('variant.stock', 'stock')
+                .where('category.displayText = :categorySearch OR category.id = :categorySearch', { categorySearch })
+                .orderBy('product.createAt', 'DESC')
+                .take(5)
+                .getMany();
+            return products;
+        }
+        catch (error) {
+            this.logger.error('Failed to fetch products by category', error.message);
+            throw new common_1.InternalServerErrorException(error.message);
+        }
+    }
 };
 exports.ProductsService = ProductsService;
 exports.ProductsService = ProductsService = ProductsService_1 = __decorate([

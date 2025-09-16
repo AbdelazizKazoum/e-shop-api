@@ -78,4 +78,5 @@ export declare class ProductsService {
     deleteCategory(categoryId: string): Promise<{
         message: string;
     }>;
+    getProductsByCategory(categorySearch: string): Promise<Product[]>;
 }

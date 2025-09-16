@@ -261,13 +261,6 @@ export class ProductsController {
     return this.productsService.getAllCategories();
   }
 
-  /**
-   * Fetch a single product by ID
-   */
-  @Get(':id')
-  async getProductById(@Param('id') id: string) {
-    return this.productsService.getProductById(id);
-  }
   // =================================================================
   // === CREATE CATEGORY =============================================
   // =================================================================
@@ -321,5 +314,21 @@ export class ProductsController {
   @Delete('categories/:id')
   async deleteCategory(@Param('id') id: string) {
     return this.productsService.deleteCategory(id);
+  }
+
+  /**
+   * Fetch 5 products by category (name or ID)
+   */
+  @Get('by-category')
+  async getProductsByCategory(@Query('category') category: string) {
+    return this.productsService.getProductsByCategory(category);
+  }
+
+  /**
+   * Fetch a single product by ID
+   */
+  @Get(':id')
+  async getProductById(@Param('id') id: string) {
+    return this.productsService.getProductById(id);
   }
 }

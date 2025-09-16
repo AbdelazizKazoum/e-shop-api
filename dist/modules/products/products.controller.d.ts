@@ -35,10 +35,11 @@ export declare class ProductsController {
         categories: import("./entities/category.entity").Category[];
     }>;
     getAllCategories(): Promise<import("./entities/category.entity").Category[]>;
-    getProductById(id: string): Promise<import("./entities/product.entity").Product>;
     createCategory(data: string, imageFile?: MulterFile): Promise<import("./entities/category.entity").Category>;
     updateCategory(id: string, data: string, imageFile?: MulterFile): Promise<import("./entities/category.entity").Category>;
     deleteCategory(id: string): Promise<{
         message: string;
     }>;
+    getProductsByCategory(category: string): Promise<import("./entities/product.entity").Product[]>;
+    getProductById(id: string): Promise<import("./entities/product.entity").Product>;
 }

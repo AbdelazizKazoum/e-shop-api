@@ -102,9 +102,6 @@ let ProductsController = class ProductsController {
     async getAllCategories() {
         return this.productsService.getAllCategories();
     }
-    async getProductById(id) {
-        return this.productsService.getProductById(id);
-    }
     async createCategory(data, imageFile) {
         const createCategoryDto = JSON.parse(data);
         let imageUrl = null;
@@ -131,6 +128,12 @@ let ProductsController = class ProductsController {
     }
     async deleteCategory(id) {
         return this.productsService.deleteCategory(id);
+    }
+    async getProductsByCategory(category) {
+        return this.productsService.getProductsByCategory(category);
+    }
+    async getProductById(id) {
+        return this.productsService.getProductById(id);
     }
 };
 exports.ProductsController = ProductsController;
@@ -245,13 +248,6 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], ProductsController.prototype, "getAllCategories", null);
 __decorate([
-    (0, common_1.Get)(':id'),
-    __param(0, (0, common_1.Param)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", Promise)
-], ProductsController.prototype, "getProductById", null);
-__decorate([
     (0, common_1.Post)('categories'),
     (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('imageFile')),
     __param(0, (0, common_1.Body)('data')),
@@ -277,6 +273,20 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], ProductsController.prototype, "deleteCategory", null);
+__decorate([
+    (0, common_1.Get)('by-category'),
+    __param(0, (0, common_1.Query)('category')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], ProductsController.prototype, "getProductsByCategory", null);
+__decorate([
+    (0, common_1.Get)(':id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], ProductsController.prototype, "getProductById", null);
 exports.ProductsController = ProductsController = __decorate([
     (0, common_1.Controller)('products'),
     __metadata("design:paramtypes", [products_service_1.ProductsService,

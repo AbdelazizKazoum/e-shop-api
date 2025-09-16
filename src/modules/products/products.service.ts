@@ -1002,4 +1002,31 @@ export class ProductsService {
       throw new InternalServerErrorException(error.message);
     }
   }
+
+  /**
+   * Fetch 5 products by category, including variants, images, and stock.
+   * @param categorySearch - Category name or ID
+   */
+  async getProductsByCategory(categorySearch: string): Promise<Product[]> {
+    try {
+      const products = await this.productRepository['productRepository']
+        .createQueryBuilder('product')
+        .leftJoinAndSelect('product.category', 'category')
+        .leftJoinAndSelect('product.variants', 'variant')
+        .leftJoinAndSelect('variant.images', 'image')
+        .leftJoinAndSelect('variant.stock', 'stock')
+        .where(
+          'category.displayText = :categorySearch OR category.id = :categorySearch',
+          { categorySearch },
+        )
+        .orderBy('product.createAt', 'DESC')
+        .take(5)
+        .getMany();
+
+      return products;
+    } catch (error) {
+      this.logger.error('Failed to fetch products by category', error.message);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
 }
