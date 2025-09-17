@@ -21,9 +21,10 @@ export class BrandsController {
   constructor(private readonly brandsService: BrandsService) {}
 
   @Post()
-  @UseInterceptors(FileInterceptor('image'))
+  @UseInterceptors(FileInterceptor('imageFile'))
   async create(@Body('data') data: string, @UploadedFile() image?: MulterFile) {
     const createBrandDto: CreateBrandDto = JSON.parse(data);
+
     return this.brandsService.create(createBrandDto, image);
   }
 
@@ -46,7 +47,7 @@ export class BrandsController {
   }
 
   @Patch(':id')
-  @UseInterceptors(FileInterceptor('image'))
+  @UseInterceptors(FileInterceptor('imageFile'))
   async update(
     @Param('id') id: string,
     @Body('data') data: string,

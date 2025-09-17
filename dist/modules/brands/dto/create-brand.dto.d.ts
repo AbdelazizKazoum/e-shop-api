@@ -1,4 +1,5 @@
 export declare class CreateBrandDto {
     name: string;
-    image?: string;
+    imageUrl?: string;
+    description?: string;
 }

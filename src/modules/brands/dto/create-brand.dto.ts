@@ -6,5 +6,9 @@ export class CreateBrandDto {
 
   @IsOptional()
   @IsString()
-  image?: string;
+  imageUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
 }

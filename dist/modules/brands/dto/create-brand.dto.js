@@ -22,5 +22,10 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], CreateBrandDto.prototype, "image", void 0);
+], CreateBrandDto.prototype, "imageUrl", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateBrandDto.prototype, "description", void 0);
 //# sourceMappingURL=create-brand.dto.js.map
