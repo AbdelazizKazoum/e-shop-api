@@ -21,6 +21,7 @@ const suppliers_module_1 = require("./modules/suppliers/suppliers.module");
 const supply_orders_module_1 = require("./modules/supply-orders/supply-orders.module");
 const storage_module_1 = require("./modules/storage/storage.module");
 const stock_module_1 = require("./modules/stock/stock.module");
+const brands_module_1 = require("./modules/brands/brands.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -38,6 +39,7 @@ exports.AppModule = AppModule = __decorate([
             supply_orders_module_1.SupplyOrdersModule,
             storage_module_1.StorageModule,
             stock_module_1.StockModule,
+            brands_module_1.BrandsModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

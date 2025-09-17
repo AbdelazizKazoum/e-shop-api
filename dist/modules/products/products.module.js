@@ -23,6 +23,7 @@ const r2_service_1 = require("../storage/r2.service");
 const variant_repository_1 = require("./repositories/variant.repository");
 const image_repository_1 = require("./repositories/image.repository");
 const stock_module_1 = require("../stock/stock.module");
+const brands_module_1 = require("../brands/brands.module");
 let ProductsModule = class ProductsModule {
 };
 exports.ProductsModule = ProductsModule;
@@ -32,6 +33,7 @@ exports.ProductsModule = ProductsModule = __decorate([
             database_module_1.DatabaseModule.forFeature([product_entity_1.Product, category_entity_1.Category, variant_entity_1.Variant, image_entity_1.Image, review_entity_1.Review]),
             storage_module_1.StorageModule,
             stock_module_1.StockModule,
+            brands_module_1.BrandsModule,
         ],
         controllers: [products_controller_1.ProductsController],
         providers: [

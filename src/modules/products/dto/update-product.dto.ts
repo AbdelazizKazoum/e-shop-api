@@ -19,7 +19,7 @@ export class UpdateProductDto {
 
   @IsOptional()
   @IsString()
-  brand?: string;
+  brand?: string; // brand id
 
   @IsOptional()
   @IsString()

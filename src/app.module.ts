@@ -13,6 +13,7 @@ import { SuppliersModule } from './modules/suppliers/suppliers.module';
 import { SupplyOrdersModule } from './modules/supply-orders/supply-orders.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { StockModule } from './modules/stock/stock.module';
+import { BrandsModule } from './modules/brands/brands.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { StockModule } from './modules/stock/stock.module';
     SupplyOrdersModule,
     StorageModule,
     StockModule,
+    BrandsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

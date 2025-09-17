@@ -14,6 +14,7 @@ const typeorm_1 = require("typeorm");
 const category_entity_1 = require("./category.entity");
 const variant_entity_1 = require("./variant.entity");
 const review_entity_1 = require("./review.entity");
+const brand_entity_1 = require("../../brands/entities/brand.entity");
 let Product = class Product {
 };
 exports.Product = Product;
@@ -30,8 +31,9 @@ __decorate([
     __metadata("design:type", String)
 ], Product.prototype, "description", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
-    __metadata("design:type", String)
+    (0, typeorm_1.ManyToOne)(() => brand_entity_1.Brand, (brand) => brand.products, { nullable: true }),
+    (0, typeorm_1.JoinColumn)(),
+    __metadata("design:type", brand_entity_1.Brand)
 ], Product.prototype, "brand", void 0);
 __decorate([
     (0, typeorm_1.Column)(),

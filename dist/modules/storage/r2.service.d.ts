@@ -5,5 +5,5 @@ export declare class R2Service {
     constructor();
     uploadFile(file: MulterFile, key: string): Promise<string>;
     getSignedUrl(key: string): Promise<string>;
-    deleteFile(key: string): Promise<void>;
+    deleteFile(pathOrUrl: string): Promise<void>;
 }

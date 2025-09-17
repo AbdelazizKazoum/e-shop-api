@@ -47,8 +47,13 @@ export class R2Service {
     return getSignedUrl(this.s3, command, { expiresIn: 3600 });
   }
 
-  // Delete a file from R2 bucket
-  async deleteFile(key: string): Promise<void> {
+  // Delete a file from R2 bucket (accepts key or full URL)
+  async deleteFile(pathOrUrl: string): Promise<void> {
+    let key = pathOrUrl;
+    const publicUrl = process.env.R2_PUBLIC_URL;
+    if (publicUrl && pathOrUrl.startsWith(publicUrl)) {
+      key = pathOrUrl.replace(`${publicUrl}/`, '');
+    }
     const command = new DeleteObjectCommand({
       Bucket: this.bucketName,
       Key: key,

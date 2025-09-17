@@ -22,6 +22,8 @@ import { Image } from './entities/image.entity';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Stock } from '../stock/entities/stock.entity';
 import { StockService } from '../stock/stock.service';
+import { Brand } from '../brands/entities/brand.entity';
+import { BrandsService } from '../brands/brands.service'; // Import the service
 
 @Injectable()
 export class ProductsService {
@@ -29,12 +31,12 @@ export class ProductsService {
 
   constructor(
     private readonly productRepository: ProductRepository,
-    private readonly categoryRepository: CategoryRepository, // inject this
-
+    private readonly categoryRepository: CategoryRepository,
     private readonly variantRepository: VariantRepository,
     private readonly r2Service: R2Service,
     private readonly stockService: StockService,
-    private readonly dataSource: DataSource, // needed for transaction
+    private readonly dataSource: DataSource,
+    private readonly brandsService: BrandsService, // Use the service instead of repository
   ) {}
 
   /**
@@ -60,11 +62,21 @@ export class ProductsService {
       throw new NotFoundException('Category not found');
     }
 
+    // Fetch the brand entity if brand id is provided
+    let brand: Brand | null = null;
+    if (createProductDto.brand) {
+      brand = await this.brandsService.findOne(createProductDto.brand);
+      if (!brand) {
+        throw new NotFoundException('Brand not found');
+      }
+    }
+
     try {
       const productData = {
         ...createProductDto,
         image: image,
         category: category, // assign the entity
+        brand: brand, // assign the entity or null
       };
 
       const product = await this.productRepository.create(productData);
@@ -593,7 +605,7 @@ export class ProductsService {
       // 1. Find the product to update
       const product = await queryRunner.manager.findOne(Product, {
         where: { id: productId },
-        relations: ['category'], // Load the category relation
+        relations: ['category', 'brand'],
       });
 
       if (!product) {
@@ -630,19 +642,38 @@ export class ProductsService {
         categoryToUpdate = newCategory;
       }
 
-      // 4. Merge the updated data into the product entity
+      // Handle brand update using BrandsService
+      let brandToUpdate = product.brand;
+      if (updateProductDto.brand !== undefined) {
+        if (updateProductDto.brand) {
+          const newBrand = await this.brandsService.findOne(
+            updateProductDto.brand,
+          );
+          if (!newBrand) {
+            throw new NotFoundException(
+              `Brand with ID "${updateProductDto.brand}" not found`,
+            );
+          }
+          brandToUpdate = newBrand;
+        } else {
+          brandToUpdate = null;
+        }
+      }
+
+      // 5. Merge the updated data into the product entity
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { categoryId, ...productData } = updateProductDto;
+      const { categoryId, brand, ...productData } = updateProductDto;
       queryRunner.manager.merge(Product, product, {
         ...productData,
         image: imagePath,
         category: categoryToUpdate,
+        brand: brandToUpdate,
       });
 
-      // 5. Save the updated product
+      // 6. Save the updated product
       const updatedProduct = await queryRunner.manager.save(Product, product);
 
-      // 6. Commit the transaction
+      // 7. Commit the transaction
       await queryRunner.commitTransaction();
       return updatedProduct;
     } catch (err) {
@@ -653,7 +684,7 @@ export class ProductsService {
         err.message || 'Failed to update product',
       );
     } finally {
-      // 7. Always release the query runner to free up the connection
+      // 8. Always release the query runner to free up the connection
       await queryRunner.release();
     }
   }

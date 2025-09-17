@@ -5,7 +5,7 @@ export class CreateProductDto {
   name: string;
 
   @IsString()
-  brand: string;
+  brand: string; // brand id
 
   @IsString()
   description: string;

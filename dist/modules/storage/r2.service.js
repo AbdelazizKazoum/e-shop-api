@@ -42,7 +42,12 @@ let R2Service = class R2Service {
         });
         return (0, s3_request_presigner_1.getSignedUrl)(this.s3, command, { expiresIn: 3600 });
     }
-    async deleteFile(key) {
+    async deleteFile(pathOrUrl) {
+        let key = pathOrUrl;
+        const publicUrl = process.env.R2_PUBLIC_URL;
+        if (publicUrl && pathOrUrl.startsWith(publicUrl)) {
+            key = pathOrUrl.replace(`${publicUrl}/`, '');
+        }
         const command = new client_s3_1.DeleteObjectCommand({
             Bucket: this.bucketName,
             Key: key,

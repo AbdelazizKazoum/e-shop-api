@@ -15,12 +15,14 @@ import { R2Service } from '../storage/r2.service';
 import { VariantRepository } from './repositories/variant.repository';
 import { ImageRepository } from './repositories/image.repository';
 import { StockModule } from '../stock/stock.module';
+import { BrandsModule } from '../brands/brands.module';
 
 @Module({
   imports: [
     DatabaseModule.forFeature([Product, Category, Variant, Image, Review]),
     StorageModule,
     StockModule,
+    BrandsModule,
   ],
   controllers: [ProductsController],
   providers: [

@@ -12,6 +12,7 @@ import { Variant } from './entities/variant.entity';
 import { UpdateVariantDto } from './dto/update-variant.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { StockService } from '../stock/stock.service';
+import { BrandsService } from '../brands/brands.service';
 export declare class ProductsService {
     private readonly productRepository;
     private readonly categoryRepository;
@@ -19,8 +20,9 @@ export declare class ProductsService {
     private readonly r2Service;
     private readonly stockService;
     private readonly dataSource;
+    private readonly brandsService;
     private readonly logger;
-    constructor(productRepository: ProductRepository, categoryRepository: CategoryRepository, variantRepository: VariantRepository, r2Service: R2Service, stockService: StockService, dataSource: DataSource);
+    constructor(productRepository: ProductRepository, categoryRepository: CategoryRepository, variantRepository: VariantRepository, r2Service: R2Service, stockService: StockService, dataSource: DataSource, brandsService: BrandsService);
     create(createProductDto: CreateProductDto, image?: string): Promise<Product>;
     getProductByName(name: string): Promise<Product>;
     createVariants(productId: string, variants: CreateVariantDto[], files: MulterFile[]): Promise<{

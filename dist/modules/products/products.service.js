@@ -22,14 +22,16 @@ const variant_entity_1 = require("./entities/variant.entity");
 const image_entity_1 = require("./entities/image.entity");
 const stock_entity_1 = require("../stock/entities/stock.entity");
 const stock_service_1 = require("../stock/stock.service");
+const brands_service_1 = require("../brands/brands.service");
 let ProductsService = ProductsService_1 = class ProductsService {
-    constructor(productRepository, categoryRepository, variantRepository, r2Service, stockService, dataSource) {
+    constructor(productRepository, categoryRepository, variantRepository, r2Service, stockService, dataSource, brandsService) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.variantRepository = variantRepository;
         this.r2Service = r2Service;
         this.stockService = stockService;
         this.dataSource = dataSource;
+        this.brandsService = brandsService;
         this.logger = new common_1.Logger(ProductsService_1.name);
     }
     async create(createProductDto, image) {
@@ -40,11 +42,19 @@ let ProductsService = ProductsService_1 = class ProductsService {
         if (!category) {
             throw new common_1.NotFoundException('Category not found');
         }
+        let brand = null;
+        if (createProductDto.brand) {
+            brand = await this.brandsService.findOne(createProductDto.brand);
+            if (!brand) {
+                throw new common_1.NotFoundException('Brand not found');
+            }
+        }
         try {
             const productData = {
                 ...createProductDto,
                 image: image,
                 category: category,
+                brand: brand,
             };
             const product = await this.productRepository.create(productData);
             return product;
@@ -386,7 +396,7 @@ let ProductsService = ProductsService_1 = class ProductsService {
         try {
             const product = await queryRunner.manager.findOne(product_entity_1.Product, {
                 where: { id: productId },
-                relations: ['category'],
+                relations: ['category', 'brand'],
             });
             if (!product) {
                 throw new common_1.NotFoundException(`Product with ID "${productId}" not found`);
@@ -410,11 +420,25 @@ let ProductsService = ProductsService_1 = class ProductsService {
                 }
                 categoryToUpdate = newCategory;
             }
-            const { categoryId, ...productData } = updateProductDto;
+            let brandToUpdate = product.brand;
+            if (updateProductDto.brand !== undefined) {
+                if (updateProductDto.brand) {
+                    const newBrand = await this.brandsService.findOne(updateProductDto.brand);
+                    if (!newBrand) {
+                        throw new common_1.NotFoundException(`Brand with ID "${updateProductDto.brand}" not found`);
+                    }
+                    brandToUpdate = newBrand;
+                }
+                else {
+                    brandToUpdate = null;
+                }
+            }
+            const { categoryId, brand, ...productData } = updateProductDto;
             queryRunner.manager.merge(product_entity_1.Product, product, {
                 ...productData,
                 image: imagePath,
                 category: categoryToUpdate,
+                brand: brandToUpdate,
             });
             const updatedProduct = await queryRunner.manager.save(product_entity_1.Product, product);
             await queryRunner.commitTransaction();
@@ -672,6 +696,7 @@ exports.ProductsService = ProductsService = ProductsService_1 = __decorate([
         variant_repository_1.VariantRepository,
         r2_service_1.R2Service,
         stock_service_1.StockService,
-        typeorm_1.DataSource])
+        typeorm_1.DataSource,
+        brands_service_1.BrandsService])
 ], ProductsService);
 //# sourceMappingURL=products.service.js.map

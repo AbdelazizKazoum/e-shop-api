@@ -10,6 +10,7 @@ import {
 import { Category } from './category.entity';
 import { Variant } from './variant.entity';
 import { Review } from './review.entity';
+import { Brand } from 'src/modules/brands/entities/brand.entity';
 
 @Entity()
 export class Product {
@@ -22,8 +23,9 @@ export class Product {
   @Column({ type: 'text', nullable: true })
   description: string;
 
-  @Column()
-  brand: string;
+  @ManyToOne(() => Brand, (brand) => brand.products, { nullable: true })
+  @JoinColumn()
+  brand?: Brand;
 
   @Column()
   gender: string;
