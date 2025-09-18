@@ -97,7 +97,7 @@ export class ProductsService {
 
     const product = await this.productRepository.findOne(
       { name },
-      { relations: ['category', 'variants', 'variants.images'] },
+      { relations: ['category', 'brand', 'variants', 'variants.images'] }, // <-- Add 'brand'
     );
     console.log('🚀 ~ ProductsService ~ getProductByName ~ product:', product);
     if (!product) {
@@ -207,13 +207,13 @@ export class ProductsService {
     limit: number;
   }> {
     try {
-      const query = this.productRepository['productRepository'] // underlying TypeORM repo
+      const query = this.productRepository['productRepository']
         .createQueryBuilder('product')
         .leftJoinAndSelect('product.category', 'category')
+        .leftJoinAndSelect('product.brand', 'brand') // <-- Add this
         .select([
           'product.id',
           'product.name',
-          'product.brand',
           'product.price',
           'product.gender',
           'product.newPrice',
@@ -226,6 +226,9 @@ export class ProductsService {
           'product.status',
           'category.id',
           'category.displayText',
+          'brand.id', // <-- Add brand fields
+          'brand.name',
+          'brand.imageUrl',
         ]);
 
       // Apply filters dynamically
@@ -289,6 +292,13 @@ export class ProductsService {
               displayText: p.category.displayText,
             }
           : null,
+        brand: p.brand
+          ? {
+              id: p.brand.id,
+              name: p.brand.name,
+              imageUrl: p.brand.imageUrl,
+            }
+          : null,
       }));
 
       return {
@@ -340,12 +350,12 @@ export class ProductsService {
       const query = this.productRepository['productRepository']
         .createQueryBuilder('product')
         .leftJoinAndSelect('product.category', 'category')
+        .leftJoinAndSelect('product.brand', 'brand') // <-- Add this
         .leftJoinAndSelect('product.variants', 'variant')
         .leftJoinAndSelect('variant.images', 'image')
         .select([
           'product.id',
           'product.name',
-          'product.brand',
           'product.price',
           'product.gender',
           'product.newPrice',
@@ -356,15 +366,15 @@ export class ProductsService {
           'product.trending',
           'product.createAt',
           'product.status',
-
           'category.id',
           'category.displayText',
-
+          'brand.id', // <-- Add brand fields
+          'brand.name',
+          'brand.imageUrl',
           'variant.id',
           'variant.color',
           'variant.size',
           'variant.qte',
-
           'image.id',
           'image.image',
         ]);
@@ -458,6 +468,13 @@ export class ProductsService {
           ? {
               id: p.category.id,
               displayText: p.category.displayText,
+            }
+          : null,
+        brand: p.brand
+          ? {
+              id: p.brand.id,
+              name: p.brand.name,
+              imageUrl: p.brand.imageUrl,
             }
           : null,
       }));
@@ -563,7 +580,7 @@ export class ProductsService {
 
   /**
    * Fetch a single product by its ID.
-   * - Loads related category, variants, images, and reviews.
+   * - Loads related category, brand, variants, images, and reviews.
    * - Throws if the product is not found.
    */
   async getProductById(id: string): Promise<Product> {
@@ -573,11 +590,11 @@ export class ProductsService {
       {
         relations: [
           'category',
+          'brand', // <-- Add this
           'variants',
           'variants.images',
           'reviews',
           'variants.stock',
-          // 'variants.stock.quantity',
         ],
       },
     );

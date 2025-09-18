@@ -67,7 +67,7 @@ let ProductsService = ProductsService_1 = class ProductsService {
     }
     async getProductByName(name) {
         console.log('🚀 ~ ProductsService ~ getProductByName ~ name:', name);
-        const product = await this.productRepository.findOne({ name }, { relations: ['category', 'variants', 'variants.images'] });
+        const product = await this.productRepository.findOne({ name }, { relations: ['category', 'brand', 'variants', 'variants.images'] });
         console.log('🚀 ~ ProductsService ~ getProductByName ~ product:', product);
         if (!product) {
             throw new common_1.NotFoundException('Product not found');
@@ -127,10 +127,10 @@ let ProductsService = ProductsService_1 = class ProductsService {
             const query = this.productRepository['productRepository']
                 .createQueryBuilder('product')
                 .leftJoinAndSelect('product.category', 'category')
+                .leftJoinAndSelect('product.brand', 'brand')
                 .select([
                 'product.id',
                 'product.name',
-                'product.brand',
                 'product.price',
                 'product.gender',
                 'product.newPrice',
@@ -143,6 +143,9 @@ let ProductsService = ProductsService_1 = class ProductsService {
                 'product.status',
                 'category.id',
                 'category.displayText',
+                'brand.id',
+                'brand.name',
+                'brand.imageUrl',
             ]);
             if (filters.name) {
                 query.andWhere('LOWER(product.name) LIKE :name', {
@@ -193,6 +196,13 @@ let ProductsService = ProductsService_1 = class ProductsService {
                         displayText: p.category.displayText,
                     }
                     : null,
+                brand: p.brand
+                    ? {
+                        id: p.brand.id,
+                        name: p.brand.name,
+                        imageUrl: p.brand.imageUrl,
+                    }
+                    : null,
             }));
             return {
                 data: formatted,
@@ -211,12 +221,12 @@ let ProductsService = ProductsService_1 = class ProductsService {
             const query = this.productRepository['productRepository']
                 .createQueryBuilder('product')
                 .leftJoinAndSelect('product.category', 'category')
+                .leftJoinAndSelect('product.brand', 'brand')
                 .leftJoinAndSelect('product.variants', 'variant')
                 .leftJoinAndSelect('variant.images', 'image')
                 .select([
                 'product.id',
                 'product.name',
-                'product.brand',
                 'product.price',
                 'product.gender',
                 'product.newPrice',
@@ -229,6 +239,9 @@ let ProductsService = ProductsService_1 = class ProductsService {
                 'product.status',
                 'category.id',
                 'category.displayText',
+                'brand.id',
+                'brand.name',
+                'brand.imageUrl',
                 'variant.id',
                 'variant.color',
                 'variant.size',
@@ -311,6 +324,13 @@ let ProductsService = ProductsService_1 = class ProductsService {
                         displayText: p.category.displayText,
                     }
                     : null,
+                brand: p.brand
+                    ? {
+                        id: p.brand.id,
+                        name: p.brand.name,
+                        imageUrl: p.brand.imageUrl,
+                    }
+                    : null,
             }));
             return {
                 data: formatted,
@@ -378,6 +398,7 @@ let ProductsService = ProductsService_1 = class ProductsService {
         const product = await this.productRepository.findOne({ id }, {
             relations: [
                 'category',
+                'brand',
                 'variants',
                 'variants.images',
                 'reviews',
