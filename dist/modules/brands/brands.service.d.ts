@@ -15,6 +15,7 @@ export declare class BrandsService {
         page: number;
         limit: number;
     }>;
+    getAllBrands(): Promise<Brand[]>;
     findOne(id: string): Promise<Brand>;
     update(id: string, updateBrandDto: UpdateBrandDto, image?: MulterFile): Promise<Brand>;
     remove(id: string): Promise<void>;

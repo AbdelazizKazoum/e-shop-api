@@ -68,6 +68,13 @@ export class BrandsService {
     return { data, total, page, limit };
   }
 
+  /**
+   * Get all brands without pagination or filter
+   */
+  async getAllBrands(): Promise<Brand[]> {
+    return await this.brandRepository.findAll({ order: { createdAt: 'DESC' } });
+  }
+
   async findOne(id: string): Promise<Brand> {
     const brand = await this.brandRepository.findOne({ id });
     if (!brand) {

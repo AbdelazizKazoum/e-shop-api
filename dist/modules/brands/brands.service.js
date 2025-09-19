@@ -54,6 +54,9 @@ let BrandsService = class BrandsService {
         });
         return { data, total, page, limit };
     }
+    async getAllBrands() {
+        return await this.brandRepository.findAll({ order: { createdAt: 'DESC' } });
+    }
     async findOne(id) {
         const brand = await this.brandRepository.findOne({ id });
         if (!brand) {

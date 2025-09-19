@@ -10,6 +10,7 @@ export declare class BrandsController {
         page: number;
         limit: number;
     }>;
+    getAllBrands(): Promise<import("./entities/brand.entity").Brand[]>;
     findOne(id: string): Promise<import("./entities/brand.entity").Brand>;
     update(id: string, data: string, image?: MulterFile): Promise<import("./entities/brand.entity").Brand>;
     remove(id: string): Promise<void>;

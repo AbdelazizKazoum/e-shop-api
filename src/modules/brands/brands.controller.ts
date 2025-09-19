@@ -41,6 +41,14 @@ export class BrandsController {
     );
   }
 
+  /**
+   * Get all brands without pagination or filter
+   */
+  @Get('all')
+  async getAllBrands() {
+    return this.brandsService.getAllBrands();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.brandsService.findOne(id);

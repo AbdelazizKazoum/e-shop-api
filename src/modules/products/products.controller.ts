@@ -21,12 +21,14 @@ import { R2Service } from '../storage/r2.service'; // adjust path if needed
 import { CreateVariantDto } from './dto/create-variant.dto';
 import { UpdateVariantDto } from './dto/update-variant.dto'; // 👈 Import the new DTO
 import { UpdateProductDto } from './dto/update-product.dto';
+import { BrandsService } from '../brands/brands.service'; // 👈 Import BrandsService
 
 @Controller('products')
 export class ProductsController {
   constructor(
     private readonly productsService: ProductsService,
-    private readonly r2Service: R2Service, // inject R2 service
+    private readonly r2Service: R2Service,
+    private readonly brandsService: BrandsService, // 👈 Inject BrandsService
   ) {}
 
   @Post()
@@ -231,15 +233,17 @@ export class ProductsController {
    * - Best Sellers
    * - Featured Products (Selected by Us)
    * - All Categories
+   * - Top 5 Brands
    */
   @Get('landing-page')
   async getLandingPageData() {
-    const [newArrivals, bestSellers, featuredProducts, categories] =
+    const [newArrivals, bestSellers, featuredProducts, categories, brands] =
       await Promise.all([
         this.productsService.getNewArrivals(),
         this.productsService.getBestSellers(),
         this.productsService.getFeaturedProducts(),
         this.productsService.getAllCategories(),
+        this.brandsService.findAll(1, 5), // 👈 Fetch top 5 brands
       ]);
 
     return {
@@ -247,6 +251,7 @@ export class ProductsController {
       bestSellers,
       featuredProducts,
       categories,
+      topBrands: brands.data, // 👈 Add brands to response
     };
   }
 

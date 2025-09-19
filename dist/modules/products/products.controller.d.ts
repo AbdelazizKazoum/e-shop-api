@@ -1,10 +1,12 @@
 import { ProductsService } from './products.service';
 import { File as MulterFile } from 'multer';
 import { R2Service } from '../storage/r2.service';
+import { BrandsService } from '../brands/brands.service';
 export declare class ProductsController {
     private readonly productsService;
     private readonly r2Service;
-    constructor(productsService: ProductsService, r2Service: R2Service);
+    private readonly brandsService;
+    constructor(productsService: ProductsService, r2Service: R2Service, brandsService: BrandsService);
     create(data: string, image: MulterFile): Promise<import("./entities/product.entity").Product>;
     createVariants(productId: string, variantsData: string, files: MulterFile[]): Promise<{
         message: string;
@@ -33,6 +35,7 @@ export declare class ProductsController {
         bestSellers: import("./entities/product.entity").Product[];
         featuredProducts: import("./entities/product.entity").Product[];
         categories: import("./entities/category.entity").Category[];
+        topBrands: import("../brands/entities/brand.entity").Brand[];
     }>;
     getAllCategories(): Promise<import("./entities/category.entity").Category[]>;
     createCategory(data: string, imageFile?: MulterFile): Promise<import("./entities/category.entity").Category>;

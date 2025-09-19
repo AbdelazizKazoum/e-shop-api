@@ -19,10 +19,12 @@ const platform_express_1 = require("@nestjs/platform-express");
 const products_service_1 = require("./products.service");
 const multer_1 = require("multer");
 const r2_service_1 = require("../storage/r2.service");
+const brands_service_1 = require("../brands/brands.service");
 let ProductsController = class ProductsController {
-    constructor(productsService, r2Service) {
+    constructor(productsService, r2Service, brandsService) {
         this.productsService = productsService;
         this.r2Service = r2Service;
+        this.brandsService = brandsService;
     }
     async create(data, image) {
         const createProductDto = JSON.parse(data);
@@ -86,17 +88,19 @@ let ProductsController = class ProductsController {
         });
     }
     async getLandingPageData() {
-        const [newArrivals, bestSellers, featuredProducts, categories] = await Promise.all([
+        const [newArrivals, bestSellers, featuredProducts, categories, brands] = await Promise.all([
             this.productsService.getNewArrivals(),
             this.productsService.getBestSellers(),
             this.productsService.getFeaturedProducts(),
             this.productsService.getAllCategories(),
+            this.brandsService.findAll(1, 5),
         ]);
         return {
             newArrivals,
             bestSellers,
             featuredProducts,
             categories,
+            topBrands: brands.data,
         };
     }
     async getAllCategories() {
@@ -290,6 +294,7 @@ __decorate([
 exports.ProductsController = ProductsController = __decorate([
     (0, common_1.Controller)('products'),
     __metadata("design:paramtypes", [products_service_1.ProductsService,
-        r2_service_1.R2Service])
+        r2_service_1.R2Service,
+        brands_service_1.BrandsService])
 ], ProductsController);
 //# sourceMappingURL=products.controller.js.map
