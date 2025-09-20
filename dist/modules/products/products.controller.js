@@ -236,7 +236,7 @@ __decorate([
     __param(11, (0, common_1.Query)('sizes')),
     __param(12, (0, common_1.Query)('sortOrder')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, Number, String, String, String, Number, Number, Number, String, String, Array, Array, String]),
+    __metadata("design:paramtypes", [Number, Number, String, Array, String, Number, Number, Number, String, String, Array, Array, String]),
     __metadata("design:returntype", Promise)
 ], ProductsController.prototype, "getAllProductsClient", null);
 __decorate([

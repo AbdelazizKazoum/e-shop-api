@@ -188,7 +188,7 @@ export class ProductsController {
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
     @Query('name') name?: string,
-    @Query('brand') brand?: string,
+    @Query('brand') brand?: string[],
     @Query('gender') gender?: string,
     @Query('rating') rating?: number,
     @Query('minPrice') minPrice?: number,

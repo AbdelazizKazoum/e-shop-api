@@ -254,9 +254,11 @@ let ProductsService = ProductsService_1 = class ProductsService {
                     name: `%${filters.name.toLowerCase()}%`,
                 });
             }
-            if (filters.brand) {
-                query.andWhere('LOWER(product.brand) LIKE :brand', {
-                    brand: `%${filters.brand.toLowerCase()}%`,
+            if (filters.brand &&
+                Array.isArray(filters.brand) &&
+                filters.brand.length > 0) {
+                query.andWhere('brand.name IN (:...brands)', {
+                    brands: filters.brand,
                 });
             }
             if (filters.gender) {

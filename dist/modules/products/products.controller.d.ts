@@ -24,7 +24,7 @@ export declare class ProductsController {
         limit: number;
     }>;
     getProductByName(name: string): Promise<import("./entities/product.entity").Product>;
-    getAllProductsClient(page?: number, limit?: number, name?: string, brand?: string, gender?: string, rating?: number, minPrice?: number, maxPrice?: number, startDate?: string, endDate?: string, categories?: string[], sizes?: string[], sortOrder?: 'Best-Rating' | 'Newest' | 'low-high' | 'Price-high' | 'Most-Popular'): Promise<{
+    getAllProductsClient(page?: number, limit?: number, name?: string, brand?: string[], gender?: string, rating?: number, minPrice?: number, maxPrice?: number, startDate?: string, endDate?: string, categories?: string[], sizes?: string[], sortOrder?: 'Best-Rating' | 'Newest' | 'low-high' | 'Price-high' | 'Most-Popular'): Promise<{
         data: Partial<import("./entities/product.entity").Product>[];
         total: number;
         page: number;

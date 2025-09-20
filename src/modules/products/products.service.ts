@@ -324,7 +324,7 @@ export class ProductsService {
     limit: number = 10,
     filters: {
       name?: string;
-      brand?: string;
+      brand?: string[];
       gender?: string;
       rating?: number;
       minPrice?: number;
@@ -386,9 +386,13 @@ export class ProductsService {
         });
       }
 
-      if (filters.brand) {
-        query.andWhere('LOWER(product.brand) LIKE :brand', {
-          brand: `%${filters.brand.toLowerCase()}%`,
+      if (
+        filters.brand &&
+        Array.isArray(filters.brand) &&
+        filters.brand.length > 0
+      ) {
+        query.andWhere('brand.name IN (:...brands)', {
+          brands: filters.brand,
         });
       }
 

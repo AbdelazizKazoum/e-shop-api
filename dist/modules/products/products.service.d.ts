@@ -45,7 +45,7 @@ export declare class ProductsService {
     }>;
     getAllProductsFilteredAndPaginatedClient(page: number, limit: number, filters: {
         name?: string;
-        brand?: string;
+        brand?: string[];
         gender?: string;
         rating?: number;
         minPrice?: number;
