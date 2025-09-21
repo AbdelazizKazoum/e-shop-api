@@ -1090,4 +1090,36 @@ export class ProductsService {
       throw new InternalServerErrorException(error.message);
     }
   }
+
+  /**
+   * Update product's average rating and review count.
+   * Call this after creating/updating/deleting a review.
+   */
+  async updateProductReviewStats(productId: string): Promise<void> {
+    // 1. Fetch all reviews for the product
+    const product = await this.productRepository.findOne(
+      { id: productId },
+      { relations: ['reviews'] },
+    );
+    if (!product) {
+      throw new NotFoundException(`Product with ID "${productId}" not found`);
+    }
+
+    const reviews = product.reviews || [];
+    const reviewCount = reviews.length;
+    const averageRating =
+      reviewCount > 0
+        ? parseFloat(
+            (
+              reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount
+            ).toFixed(2),
+          )
+        : 0;
+
+    // 2. Update product entity
+    product.averageRating = averageRating;
+    product.reviewCount = reviewCount;
+
+    await this.productRepository.create(product);
+  }
 }

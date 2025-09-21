@@ -82,4 +82,5 @@ export declare class ProductsService {
         message: string;
     }>;
     getProductsByCategory(categorySearch: string): Promise<Product[]>;
+    updateProductReviewStats(productId: string): Promise<void>;
 }

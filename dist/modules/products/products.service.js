@@ -714,6 +714,20 @@ let ProductsService = ProductsService_1 = class ProductsService {
             throw new common_1.InternalServerErrorException(error.message);
         }
     }
+    async updateProductReviewStats(productId) {
+        const product = await this.productRepository.findOne({ id: productId }, { relations: ['reviews'] });
+        if (!product) {
+            throw new common_1.NotFoundException(`Product with ID "${productId}" not found`);
+        }
+        const reviews = product.reviews || [];
+        const reviewCount = reviews.length;
+        const averageRating = reviewCount > 0
+            ? parseFloat((reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount).toFixed(2))
+            : 0;
+        product.averageRating = averageRating;
+        product.reviewCount = reviewCount;
+        await this.productRepository.create(product);
+    }
 };
 exports.ProductsService = ProductsService;
 exports.ProductsService = ProductsService = ProductsService_1 = __decorate([

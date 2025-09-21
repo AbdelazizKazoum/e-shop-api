@@ -8,18 +8,29 @@ import {
   Param,
   Delete,
   Query,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { ReviewsService } from './reviews.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
+import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard'; // Adjust path if needed
 
 @Controller('reviews')
 export class ReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createReviewDto: CreateReviewDto) {
-    return this.reviewsService.createReview(createReviewDto);
+  create(@Body() createReviewDto: CreateReviewDto, @Req() req: any) {
+    // Attach userId from JWT payload to DTO
+    const userId = req.user['id'];
+    console.log('🚀 ~ ReviewsController ~ create ~ userId:', userId);
+
+    return this.reviewsService.createReview({
+      ...createReviewDto,
+      userId,
+    });
   }
 
   @Get('product/:productId')

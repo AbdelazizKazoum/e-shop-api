@@ -1,5 +1,13 @@
 /* eslint-disable prettier/prettier */
-import { IsString, IsUUID, IsInt, Min, Max, IsNotEmpty } from 'class-validator';
+import {
+  IsString,
+  IsUUID,
+  IsInt,
+  Min,
+  Max,
+  IsNotEmpty,
+  IsOptional,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateReviewDto {
@@ -7,9 +15,8 @@ export class CreateReviewDto {
   @IsNotEmpty()
   title: string;
 
-  @IsUUID()
-  @IsNotEmpty()
-  userId: string;
+  @IsOptional()
+  userId?: string;
 
   @IsUUID()
   @IsNotEmpty()

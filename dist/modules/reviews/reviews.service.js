@@ -27,16 +27,25 @@ let ReviewsService = class ReviewsService {
             user: { id: createReviewDto.userId },
             product: { id: createReviewDto.productId },
         });
+        let review;
         if (existingReview) {
-            throw new common_1.BadRequestException('You have already reviewed this product');
+            review = await this.reviewRepository.findOneAndUpdate({ id: existingReview.id }, {
+                title: createReviewDto.title,
+                comment: createReviewDto.comment,
+                rating: createReviewDto.rating,
+            });
         }
-        return await this.reviewRepository.create({
-            title: createReviewDto.title,
-            comment: createReviewDto.comment,
-            rating: createReviewDto.rating,
-            user: { id: createReviewDto.userId },
-            product: { id: createReviewDto.productId },
-        });
+        else {
+            review = await this.reviewRepository.create({
+                title: createReviewDto.title,
+                comment: createReviewDto.comment,
+                rating: createReviewDto.rating,
+                user: { id: createReviewDto.userId },
+                product: { id: createReviewDto.productId },
+            });
+        }
+        await this.productsService.updateProductReviewStats(createReviewDto.productId);
+        return review;
     }
     async updateReview(reviewId, userId, updateReviewDto) {
         const review = await this.reviewRepository.findOne({ id: reviewId }, { relations: ['user'] });

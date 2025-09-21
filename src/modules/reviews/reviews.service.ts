@@ -2,7 +2,6 @@
 import {
   Injectable,
   NotFoundException,
-  BadRequestException,
   ForbiddenException,
 } from '@nestjs/common';
 import { ReviewRepository } from './repositories/review.repository';
@@ -38,17 +37,35 @@ export class ReviewsService {
       user: { id: createReviewDto.userId } as any,
       product: { id: createReviewDto.productId } as any,
     });
+
+    let review: Review;
     if (existingReview) {
-      throw new BadRequestException('You have already reviewed this product');
+      // Update the existing review
+      review = await this.reviewRepository.findOneAndUpdate(
+        { id: existingReview.id },
+        {
+          title: createReviewDto.title,
+          comment: createReviewDto.comment,
+          rating: createReviewDto.rating,
+        },
+      );
+    } else {
+      // Create a new review
+      review = await this.reviewRepository.create({
+        title: createReviewDto.title,
+        comment: createReviewDto.comment,
+        rating: createReviewDto.rating,
+        user: { id: createReviewDto.userId } as any,
+        product: { id: createReviewDto.productId } as any,
+      });
     }
 
-    return await this.reviewRepository.create({
-      title: createReviewDto.title,
-      comment: createReviewDto.comment,
-      rating: createReviewDto.rating,
-      user: { id: createReviewDto.userId } as any,
-      product: { id: createReviewDto.productId } as any,
-    });
+    // Update product stats after review creation/update
+    await this.productsService.updateProductReviewStats(
+      createReviewDto.productId,
+    );
+
+    return review;
   }
 
   // =================================================================

@@ -4,7 +4,7 @@ import { UpdateReviewDto } from './dto/update-review.dto';
 export declare class ReviewsController {
     private readonly reviewsService;
     constructor(reviewsService: ReviewsService);
-    create(createReviewDto: CreateReviewDto): Promise<import("./entities/review.entity").Review>;
+    create(createReviewDto: CreateReviewDto, req: any): Promise<import("./entities/review.entity").Review>;
     getProductReviews(productId: string, page?: number, limit?: number): Promise<{
         data: import("./entities/review.entity").Review[];
         total: number;
