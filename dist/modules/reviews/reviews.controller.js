@@ -24,8 +24,8 @@ let ReviewsController = class ReviewsController {
     create(createReviewDto) {
         return this.reviewsService.createReview(createReviewDto);
     }
-    getProductReviews(productId) {
-        return this.reviewsService.getProductReviews(productId);
+    getProductReviews(productId, page, limit) {
+        return this.reviewsService.getProductReviews(productId, page ? Number(page) : 1, limit ? Number(limit) : 10);
     }
     getProductAverageRating(productId) {
         return this.reviewsService.getProductAverageRating(productId);
@@ -48,8 +48,10 @@ __decorate([
 __decorate([
     (0, common_1.Get)('product/:productId'),
     __param(0, (0, common_1.Param)('productId')),
+    __param(1, (0, common_1.Query)('page')),
+    __param(2, (0, common_1.Query)('limit')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Number, Number]),
     __metadata("design:returntype", void 0)
 ], ReviewsController.prototype, "getProductReviews", null);
 __decorate([

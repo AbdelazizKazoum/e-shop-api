@@ -5,11 +5,11 @@ import {
   BadRequestException,
   ForbiddenException,
 } from '@nestjs/common';
+import { ReviewRepository } from './repositories/review.repository';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { Review } from './entities/review.entity';
 import { ProductsService } from 'src/modules/products/products.service';
-import { ReviewRepository } from './repositories/review.repository';
 
 @Injectable()
 export class ReviewsService {
@@ -18,6 +18,9 @@ export class ReviewsService {
     private readonly productsService: ProductsService,
   ) {}
 
+  // =================================================================
+  // === CREATE REVIEW ============================================= =
+  // =================================================================
   /**
    * Create a review for a product.
    * - Checks if the product exists using ProductsService.
@@ -48,6 +51,9 @@ export class ReviewsService {
     });
   }
 
+  // =================================================================
+  // === UPDATE REVIEW ============================================= =
+  // =================================================================
   /**
    * Update a review.
    * - Only allows the review owner to update.
@@ -73,6 +79,9 @@ export class ReviewsService {
     );
   }
 
+  // =================================================================
+  // === DELETE REVIEW ============================================= =
+  // =================================================================
   /**
    * Delete a review.
    * - Only allows the review owner to delete.
@@ -95,24 +104,42 @@ export class ReviewsService {
     return { message: 'Review deleted successfully' };
   }
 
+  // =================================================================
+  // === GET PRODUCT REVIEWS ======================================== =
+  // =================================================================
   /**
-   * Get all reviews for a product.
+   * Get paginated reviews for a product.
+   * @param productId - Product ID
+   * @param page - Page number (default: 1)
+   * @param limit - Items per page (default: 10)
+   * @returns Paginated reviews and meta info
    */
-  async getProductReviews(productId: string): Promise<Review[]> {
-    // Optionally check product existence using ProductsService
+  async getProductReviews(
+    productId: string,
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<{ data: Review[]; total: number; page: number; limit: number }> {
     await this.productsService.getProductById(productId);
-    return await this.reviewRepository.findAll({
-      where: { product: { id: productId } as any },
-      relations: ['user'],
-      order: { reviewDate: 'DESC' },
-    });
+
+    const [data, total] =
+      await this.reviewRepository.findAndCountWithPagination({
+        where: { product: { id: productId } as any },
+        relations: ['user'],
+        order: { reviewDate: 'DESC' },
+        skip: (page - 1) * limit,
+        take: limit,
+      });
+
+    return { data, total, page, limit };
   }
 
+  // =================================================================
+  // === GET PRODUCT AVERAGE RATING ================================== =
+  // =================================================================
   /**
    * Get average rating for a product.
    */
   async getProductAverageRating(productId: string): Promise<number> {
-    // Optionally check product existence using ProductsService
     await this.productsService.getProductById(productId);
     const reviews = await this.reviewRepository.findAll({
       where: { product: { id: productId } as any },

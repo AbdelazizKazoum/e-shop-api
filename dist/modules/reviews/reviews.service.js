@@ -11,8 +11,8 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ReviewsService = void 0;
 const common_1 = require("@nestjs/common");
-const products_service_1 = require("../products/products.service");
 const review_repository_1 = require("./repositories/review.repository");
+const products_service_1 = require("../products/products.service");
 let ReviewsService = class ReviewsService {
     constructor(reviewRepository, productsService) {
         this.reviewRepository = reviewRepository;
@@ -59,13 +59,16 @@ let ReviewsService = class ReviewsService {
         await this.reviewRepository.findOneAndDelete({ id: reviewId });
         return { message: 'Review deleted successfully' };
     }
-    async getProductReviews(productId) {
+    async getProductReviews(productId, page = 1, limit = 10) {
         await this.productsService.getProductById(productId);
-        return await this.reviewRepository.findAll({
+        const [data, total] = await this.reviewRepository.findAndCountWithPagination({
             where: { product: { id: productId } },
             relations: ['user'],
             order: { reviewDate: 'DESC' },
+            skip: (page - 1) * limit,
+            take: limit,
         });
+        return { data, total, page, limit };
     }
     async getProductAverageRating(productId) {
         await this.productsService.getProductById(productId);
