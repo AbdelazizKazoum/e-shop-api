@@ -225,7 +225,7 @@ __decorate([
     __param(0, (0, common_1.Query)('page')),
     __param(1, (0, common_1.Query)('limit')),
     __param(2, (0, common_1.Query)('name')),
-    __param(3, (0, common_1.Query)('brand')),
+    __param(3, (0, common_1.Query)('brands')),
     __param(4, (0, common_1.Query)('gender')),
     __param(5, (0, common_1.Query)('rating')),
     __param(6, (0, common_1.Query)('minPrice')),
