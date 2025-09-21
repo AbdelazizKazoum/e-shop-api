@@ -13,8 +13,8 @@ exports.User = void 0;
 const typeorm_1 = require("typeorm");
 const address_entity_1 = require("./address.entity");
 const order_entity_1 = require("../../orders/entities/order.entity");
-const review_entity_1 = require("../../products/entities/review.entity");
 const stock_movement_entity_1 = require("../../stock-movements/entities/stock-movement.entity");
+const review_entity_1 = require("../../reviews/entities/review.entity");
 let User = class User {
 };
 exports.User = User;

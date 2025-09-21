@@ -1,7 +1,7 @@
 import { Address } from './address.entity';
 import { Order } from 'src/modules/orders/entities/order.entity';
-import { Review } from 'src/modules/products/entities/review.entity';
 import { StockMovement } from 'src/modules/stock-movements/entities/stock-movement.entity';
+import { Review } from 'src/modules/reviews/entities/review.entity';
 export declare class User {
     id: string;
     email: string;

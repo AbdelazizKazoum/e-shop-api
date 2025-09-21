@@ -610,6 +610,15 @@ export class ProductsService {
     return product;
   }
 
+  /**
+   * Fetch a single light product by its ID.
+   * - Throws if the product is not found.
+   */
+  async getLightProductById(id: string): Promise<Product> {
+    const product = await this.productRepository.findOne({ id });
+    return product;
+  }
+
   // =================================================================
   // === UPDATE PRODUCT ==================================
   // =================================================================

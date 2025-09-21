@@ -22,6 +22,7 @@ const supply_orders_module_1 = require("./modules/supply-orders/supply-orders.mo
 const storage_module_1 = require("./modules/storage/storage.module");
 const stock_module_1 = require("./modules/stock/stock.module");
 const brands_module_1 = require("./modules/brands/brands.module");
+const reviews_module_1 = require("./modules/reviews/reviews.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -40,6 +41,7 @@ exports.AppModule = AppModule = __decorate([
             storage_module_1.StorageModule,
             stock_module_1.StockModule,
             brands_module_1.BrandsModule,
+            reviews_module_1.ReviewsModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

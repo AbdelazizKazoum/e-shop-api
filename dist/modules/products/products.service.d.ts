@@ -65,6 +65,7 @@ export declare class ProductsService {
     getBestSellers(): Promise<Product[]>;
     getFeaturedProducts(): Promise<Product[]>;
     getProductById(id: string): Promise<Product>;
+    getLightProductById(id: string): Promise<Product>;
     updateProduct(productId: string, updateProductDto: UpdateProductDto, image?: MulterFile): Promise<Product>;
     createVariant(productId: string, variantData: CreateVariantDto, files: MulterFile[]): Promise<Variant>;
     updateVariant(variantId: string, updateVariantDto: UpdateVariantDto, files?: MulterFile[]): Promise<Variant>;

@@ -13,7 +13,6 @@ const products_controller_1 = require("./products.controller");
 const product_entity_1 = require("./entities/product.entity");
 const category_entity_1 = require("./entities/category.entity");
 const variant_entity_1 = require("./entities/variant.entity");
-const review_entity_1 = require("./entities/review.entity");
 const database_module_1 = require("../../core/database/database.module");
 const image_entity_1 = require("./entities/image.entity");
 const product_repository_1 = require("./repositories/product.repository");
@@ -30,7 +29,7 @@ exports.ProductsModule = ProductsModule;
 exports.ProductsModule = ProductsModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            database_module_1.DatabaseModule.forFeature([product_entity_1.Product, category_entity_1.Category, variant_entity_1.Variant, image_entity_1.Image, review_entity_1.Review]),
+            database_module_1.DatabaseModule.forFeature([product_entity_1.Product, category_entity_1.Category, variant_entity_1.Variant, image_entity_1.Image]),
             storage_module_1.StorageModule,
             stock_module_1.StockModule,
             brands_module_1.BrandsModule,
@@ -44,6 +43,7 @@ exports.ProductsModule = ProductsModule = __decorate([
             category_repository_1.CategoryRepository,
             r2_service_1.R2Service,
         ],
+        exports: [products_service_1.ProductsService],
     })
 ], ProductsModule);
 //# sourceMappingURL=products.module.js.map

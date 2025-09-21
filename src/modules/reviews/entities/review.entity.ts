@@ -8,8 +8,8 @@ import {
   CreateDateColumn,
   JoinColumn,
 } from 'typeorm';
-import { Product } from './product.entity';
 import { User } from 'src/modules/users/entities/user.entity';
+import { Product } from 'src/modules/products/entities/product.entity';
 
 @Entity('reviews')
 export class Review {

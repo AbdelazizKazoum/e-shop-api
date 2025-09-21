@@ -5,7 +5,6 @@ import { ProductsController } from './products.controller';
 import { Product } from './entities/product.entity';
 import { Category } from './entities/category.entity';
 import { Variant } from './entities/variant.entity';
-import { Review } from './entities/review.entity';
 import { DatabaseModule } from 'src/core/database/database.module';
 import { Image } from './entities/image.entity';
 import { ProductRepository } from './repositories/product.repository';
@@ -19,7 +18,7 @@ import { BrandsModule } from '../brands/brands.module';
 
 @Module({
   imports: [
-    DatabaseModule.forFeature([Product, Category, Variant, Image, Review]),
+    DatabaseModule.forFeature([Product, Category, Variant, Image]),
     StorageModule,
     StockModule,
     BrandsModule,
@@ -33,5 +32,6 @@ import { BrandsModule } from '../brands/brands.module';
     CategoryRepository,
     R2Service,
   ],
+  exports: [ProductsService],
 })
 export class ProductsModule {}

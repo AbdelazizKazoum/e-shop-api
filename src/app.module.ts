@@ -14,6 +14,7 @@ import { SupplyOrdersModule } from './modules/supply-orders/supply-orders.module
 import { StorageModule } from './modules/storage/storage.module';
 import { StockModule } from './modules/stock/stock.module';
 import { BrandsModule } from './modules/brands/brands.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { BrandsModule } from './modules/brands/brands.module';
     StorageModule,
     StockModule,
     BrandsModule,
+    ReviewsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

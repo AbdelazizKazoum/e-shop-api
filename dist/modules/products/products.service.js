@@ -412,6 +412,10 @@ let ProductsService = ProductsService_1 = class ProductsService {
         }
         return product;
     }
+    async getLightProductById(id) {
+        const product = await this.productRepository.findOne({ id });
+        return product;
+    }
     async updateProduct(productId, updateProductDto, image) {
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();

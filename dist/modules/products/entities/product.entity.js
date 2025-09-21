@@ -13,8 +13,8 @@ exports.Product = void 0;
 const typeorm_1 = require("typeorm");
 const category_entity_1 = require("./category.entity");
 const variant_entity_1 = require("./variant.entity");
-const review_entity_1 = require("./review.entity");
 const brand_entity_1 = require("../../brands/entities/brand.entity");
+const review_entity_1 = require("../../reviews/entities/review.entity");
 let Product = class Product {
 };
 exports.Product = Product;
