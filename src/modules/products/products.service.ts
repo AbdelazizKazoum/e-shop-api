@@ -1118,6 +1118,8 @@ export class ProductsService {
 
     // 2. Update product entity
     product.averageRating = averageRating;
+    product.rating = averageRating;
+
     product.reviewCount = reviewCount;
 
     await this.productRepository.create(product);

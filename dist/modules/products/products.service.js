@@ -725,6 +725,7 @@ let ProductsService = ProductsService_1 = class ProductsService {
             ? parseFloat((reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount).toFixed(2))
             : 0;
         product.averageRating = averageRating;
+        product.rating = averageRating;
         product.reviewCount = reviewCount;
         await this.productRepository.create(product);
     }
