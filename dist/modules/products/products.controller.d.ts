@@ -44,5 +44,25 @@ export declare class ProductsController {
         message: string;
     }>;
     getProductsByCategory(category: string): Promise<import("./entities/product.entity").Product[]>;
-    getProductById(id: string): Promise<import("./entities/product.entity").Product>;
+    getProductById(id: string): Promise<{
+        reviews: import("typeorm").ObjectLiteral[];
+        id: string;
+        name: string;
+        description: string;
+        brand?: import("../brands/entities/brand.entity").Brand;
+        gender: string;
+        quantity?: number;
+        image?: string;
+        rating?: number;
+        reviewCount?: number;
+        price: number;
+        newPrice?: number;
+        status?: "active" | "inactive" | "archived";
+        trending?: boolean;
+        tags?: string[];
+        createAt?: string;
+        category: import("./entities/category.entity").Category;
+        variants?: import("./entities/variant.entity").Variant[];
+        averageRating?: number;
+    }>;
 }

@@ -587,17 +587,16 @@ export class ProductsService {
    * - Loads related category, brand, variants, images, and reviews.
    * - Throws if the product is not found.
    */
-  async getProductById(id: string): Promise<Product> {
-    console.log('🚀 ~ ProductsService ~ getProductById ~ id:', id);
+  async getProductById(id: string) {
+    // 1. Fetch product without reviews
     const product = await this.productRepository.findOne(
       { id },
       {
         relations: [
           'category',
-          'brand', // <-- Add this
+          'brand',
           'variants',
           'variants.images',
-          'reviews',
           'variants.stock',
         ],
       },
@@ -607,7 +606,21 @@ export class ProductsService {
       throw new NotFoundException('Product not found');
     }
 
-    return product;
+    // 2. Fetch only the first two reviews (most recent)
+    const reviewRepo =
+      this.productRepository['productRepository'].manager.getRepository(
+        'Review',
+      );
+    const firstTwoReviews = await reviewRepo.find({
+      where: { product: { id } },
+      relations: ['user'],
+      order: { reviewDate: 'DESC' },
+      take: 2,
+      select: ['id', 'title', 'comment', 'rating', 'reviewDate'],
+    });
+
+    // 3. Attach only the first two reviews to the product object
+    return { ...product, reviews: firstTwoReviews };
   }
 
   /**

@@ -396,21 +396,27 @@ let ProductsService = ProductsService_1 = class ProductsService {
         }
     }
     async getProductById(id) {
-        console.log('🚀 ~ ProductsService ~ getProductById ~ id:', id);
         const product = await this.productRepository.findOne({ id }, {
             relations: [
                 'category',
                 'brand',
                 'variants',
                 'variants.images',
-                'reviews',
                 'variants.stock',
             ],
         });
         if (!product) {
             throw new common_1.NotFoundException('Product not found');
         }
-        return product;
+        const reviewRepo = this.productRepository['productRepository'].manager.getRepository('Review');
+        const firstTwoReviews = await reviewRepo.find({
+            where: { product: { id } },
+            relations: ['user'],
+            order: { reviewDate: 'DESC' },
+            take: 2,
+            select: ['id', 'title', 'comment', 'rating', 'reviewDate'],
+        });
+        return { ...product, reviews: firstTwoReviews };
     }
     async getLightProductById(id) {
         const product = await this.productRepository.findOne({ id });

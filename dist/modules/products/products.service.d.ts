@@ -12,6 +12,7 @@ import { Variant } from './entities/variant.entity';
 import { UpdateVariantDto } from './dto/update-variant.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { StockService } from '../stock/stock.service';
+import { Brand } from '../brands/entities/brand.entity';
 import { BrandsService } from '../brands/brands.service';
 export declare class ProductsService {
     private readonly productRepository;
@@ -64,7 +65,27 @@ export declare class ProductsService {
     getNewArrivals(): Promise<Product[]>;
     getBestSellers(): Promise<Product[]>;
     getFeaturedProducts(): Promise<Product[]>;
-    getProductById(id: string): Promise<Product>;
+    getProductById(id: string): Promise<{
+        reviews: import("typeorm").ObjectLiteral[];
+        id: string;
+        name: string;
+        description: string;
+        brand?: Brand;
+        gender: string;
+        quantity?: number;
+        image?: string;
+        rating?: number;
+        reviewCount?: number;
+        price: number;
+        newPrice?: number;
+        status?: "active" | "inactive" | "archived";
+        trending?: boolean;
+        tags?: string[];
+        createAt?: string;
+        category: Category;
+        variants?: Variant[];
+        averageRating?: number;
+    }>;
     getLightProductById(id: string): Promise<Product>;
     updateProduct(productId: string, updateProductDto: UpdateProductDto, image?: MulterFile): Promise<Product>;
     createVariant(productId: string, variantData: CreateVariantDto, files: MulterFile[]): Promise<Variant>;
