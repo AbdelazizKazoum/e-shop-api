@@ -8,4 +8,5 @@ export declare class UpdateProductDto {
     status?: 'active' | 'inactive' | 'archived';
     trending?: boolean;
     categoryId?: string;
+    tags?: string[];
 }

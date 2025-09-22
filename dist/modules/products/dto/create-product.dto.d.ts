@@ -6,4 +6,5 @@ export declare class CreateProductDto {
     gender: string;
     price: number;
     newPrice?: number;
+    tags?: string[];
 }

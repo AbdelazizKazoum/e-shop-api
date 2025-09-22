@@ -6,6 +6,7 @@ import {
   IsNumber,
   IsEnum,
   IsBoolean,
+  IsArray,
 } from 'class-validator';
 
 export class UpdateProductDto {
@@ -44,4 +45,9 @@ export class UpdateProductDto {
   @IsOptional()
   @IsString()
   categoryId?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
 }
