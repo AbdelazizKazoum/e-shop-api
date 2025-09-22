@@ -18,5 +18,8 @@ export declare class ReviewsService {
         page: number;
         limit: number;
     }>;
-    getProductAverageRating(productId: string): Promise<number>;
+    getProductAverageRating(productId: string): Promise<{
+        rating: number;
+        reviewCount: number;
+    }>;
 }

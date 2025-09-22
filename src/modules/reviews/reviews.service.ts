@@ -154,15 +154,18 @@ export class ReviewsService {
   // === GET PRODUCT AVERAGE RATING ================================== =
   // =================================================================
   /**
-   * Get average rating for a product.
+   * Get average rating and review count for a product.
    */
-  async getProductAverageRating(productId: string): Promise<number> {
-    await this.productsService.getProductById(productId);
-    const reviews = await this.reviewRepository.findAll({
-      where: { product: { id: productId } as any },
-    });
-    if (reviews.length === 0) return 0;
-    const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
-    return parseFloat((sum / reviews.length).toFixed(2));
+  async getProductAverageRating(
+    productId: string,
+  ): Promise<{ rating: number; reviewCount: number }> {
+    const product = await this.productsService.getProductById(productId);
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+    return {
+      rating: product.rating ?? 0,
+      reviewCount: product.reviewCount ?? 0,
+    };
   }
 }

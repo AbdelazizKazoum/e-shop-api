@@ -11,7 +11,10 @@ export declare class ReviewsController {
         page: number;
         limit: number;
     }>;
-    getProductAverageRating(productId: string): Promise<number>;
+    getProductAverageRating(productId: string): Promise<{
+        rating: number;
+        reviewCount: number;
+    }>;
     update(id: string, userId: string, updateReviewDto: UpdateReviewDto): Promise<import("./entities/review.entity").Review>;
     remove(id: string, userId: string): Promise<{
         message: string;

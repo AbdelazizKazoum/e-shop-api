@@ -80,14 +80,14 @@ let ReviewsService = class ReviewsService {
         return { data, total, page, limit };
     }
     async getProductAverageRating(productId) {
-        await this.productsService.getProductById(productId);
-        const reviews = await this.reviewRepository.findAll({
-            where: { product: { id: productId } },
-        });
-        if (reviews.length === 0)
-            return 0;
-        const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
-        return parseFloat((sum / reviews.length).toFixed(2));
+        const product = await this.productsService.getProductById(productId);
+        if (!product) {
+            throw new common_1.NotFoundException('Product not found');
+        }
+        return {
+            rating: product.rating ?? 0,
+            reviewCount: product.reviewCount ?? 0,
+        };
     }
 };
 exports.ReviewsService = ReviewsService;
