@@ -139,6 +139,10 @@ let ProductsController = class ProductsController {
     async getProductById(id) {
         return this.productsService.getProductById(id);
     }
+    async getVariantsByProductNamePaginated(productName, page = 1, limit = 10) {
+        console.log('🚀 ~ ProductsController ~ getVariantsByProductNamePaginated ~ productName:', productName);
+        return this.productsService.getVariantsByProductNamePaginated(productName, Number(page), Number(limit));
+    }
 };
 exports.ProductsController = ProductsController;
 __decorate([
@@ -291,6 +295,15 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], ProductsController.prototype, "getProductById", null);
+__decorate([
+    (0, common_1.Get)('variants/variants-by-product-name'),
+    __param(0, (0, common_1.Query)('productName')),
+    __param(1, (0, common_1.Query)('page')),
+    __param(2, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Number, Number]),
+    __metadata("design:returntype", Promise)
+], ProductsController.prototype, "getVariantsByProductNamePaginated", null);
 exports.ProductsController = ProductsController = __decorate([
     (0, common_1.Controller)('products'),
     __metadata("design:paramtypes", [products_service_1.ProductsService,

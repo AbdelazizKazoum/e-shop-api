@@ -1137,4 +1137,48 @@ export class ProductsService {
 
     await this.productRepository.create(product);
   }
+
+  /**
+   * Fetch variants with their product, filtered by product name (partial match), paginated.
+   * @param productName - Partial or full product name to filter variants by.
+   * @param page - Page number (default: 1).
+   * @param limit - Items per page (default: 10).
+   */
+  async getVariantsByProductNamePaginated(
+    productName: string,
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<{
+    data: Variant[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
+    try {
+      const query = this.variantRepository['variantRepository']
+        .createQueryBuilder('variant')
+        .leftJoinAndSelect('variant.product', 'product')
+        .where('LOWER(product.name) LIKE :name', {
+          name: `%${productName.toLowerCase()}%`,
+        })
+        .skip((page - 1) * limit)
+        .take(limit)
+        .orderBy('product.name', 'ASC');
+
+      const [variants, total] = await query.getManyAndCount();
+
+      return {
+        data: variants,
+        total,
+        page,
+        limit,
+      };
+    } catch (error) {
+      this.logger.error(
+        'Failed to fetch variants by product name',
+        error.message,
+      );
+      throw new InternalServerErrorException(error.message);
+    }
+  }
 }

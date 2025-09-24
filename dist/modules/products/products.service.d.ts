@@ -104,4 +104,10 @@ export declare class ProductsService {
     }>;
     getProductsByCategory(categorySearch: string): Promise<Product[]>;
     updateProductReviewStats(productId: string): Promise<void>;
+    getVariantsByProductNamePaginated(productName: string, page?: number, limit?: number): Promise<{
+        data: Variant[];
+        total: number;
+        page: number;
+        limit: number;
+    }>;
 }

@@ -735,6 +735,30 @@ let ProductsService = ProductsService_1 = class ProductsService {
         product.reviewCount = reviewCount;
         await this.productRepository.create(product);
     }
+    async getVariantsByProductNamePaginated(productName, page = 1, limit = 10) {
+        try {
+            const query = this.variantRepository['variantRepository']
+                .createQueryBuilder('variant')
+                .leftJoinAndSelect('variant.product', 'product')
+                .where('LOWER(product.name) LIKE :name', {
+                name: `%${productName.toLowerCase()}%`,
+            })
+                .skip((page - 1) * limit)
+                .take(limit)
+                .orderBy('product.name', 'ASC');
+            const [variants, total] = await query.getManyAndCount();
+            return {
+                data: variants,
+                total,
+                page,
+                limit,
+            };
+        }
+        catch (error) {
+            this.logger.error('Failed to fetch variants by product name', error.message);
+            throw new common_1.InternalServerErrorException(error.message);
+        }
+    }
 };
 exports.ProductsService = ProductsService;
 exports.ProductsService = ProductsService = ProductsService_1 = __decorate([

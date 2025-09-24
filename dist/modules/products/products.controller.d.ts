@@ -65,4 +65,10 @@ export declare class ProductsController {
         variants?: import("./entities/variant.entity").Variant[];
         averageRating?: number;
     }>;
+    getVariantsByProductNamePaginated(productName: string, page?: number, limit?: number): Promise<{
+        data: import("./entities/variant.entity").Variant[];
+        total: number;
+        page: number;
+        limit: number;
+    }>;
 }

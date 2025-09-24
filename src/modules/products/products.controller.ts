@@ -336,4 +336,26 @@ export class ProductsController {
   async getProductById(@Param('id') id: string) {
     return this.productsService.getProductById(id);
   }
+
+  /**
+   * Fetch variants with their product, filtered by product name (partial match), paginated.
+   * Example: /products/variants/variants-by-product-name?productName=shirt&page=1&limit=10
+   */
+  @Get('variants/variants-by-product-name')
+  async getVariantsByProductNamePaginated(
+    @Query('productName') productName: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
+    console.log(
+      '🚀 ~ ProductsController ~ getVariantsByProductNamePaginated ~ productName:',
+      productName,
+    );
+
+    return this.productsService.getVariantsByProductNamePaginated(
+      productName,
+      Number(page),
+      Number(limit),
+    );
+  }
 }
