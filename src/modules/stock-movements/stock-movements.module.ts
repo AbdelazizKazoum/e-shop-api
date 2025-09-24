@@ -5,10 +5,11 @@ import { StockMovement } from './entities/stock-movement.entity';
 import { Stock } from '../stock/entities/stock.entity';
 import { Variant } from '../products/entities/variant.entity';
 import { DatabaseModule } from 'src/core/database/database.module';
+import { StockMovementRepository } from './repositories/stock-movement.repository';
 
 @Module({
   imports: [DatabaseModule.forFeature([StockMovement, Stock, Variant])],
   controllers: [StockMovementsController],
-  providers: [StockMovementsService],
+  providers: [StockMovementsService, StockMovementRepository],
 })
 export class StockMovementsModule {}

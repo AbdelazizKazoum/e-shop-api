@@ -21,20 +21,30 @@ let StockMovementsController = class StockMovementsController {
     constructor(stockMovementsService) {
         this.stockMovementsService = stockMovementsService;
     }
-    create(createStockMovementDto) {
+    async create(createStockMovementDto) {
         return this.stockMovementsService.create(createStockMovementDto);
     }
-    findAll() {
-        return this.stockMovementsService.findAll();
+    async findAll(page, limit, type, reason, variantId, supplierId, userId, startDate, endDate) {
+        return this.stockMovementsService.findAll({
+            page,
+            limit,
+            type,
+            reason,
+            variantId,
+            supplierId,
+            userId,
+            startDate,
+            endDate,
+        });
     }
-    findOne(id) {
-        return this.stockMovementsService.findOne(+id);
+    async findOne(id) {
+        return this.stockMovementsService.findOne(id);
     }
-    update(id, updateStockMovementDto) {
-        return this.stockMovementsService.update(+id, updateStockMovementDto);
+    async update(id, updateStockMovementDto) {
+        return this.stockMovementsService.update(id, updateStockMovementDto);
     }
-    remove(id) {
-        return this.stockMovementsService.remove(+id);
+    async remove(id) {
+        return this.stockMovementsService.remove(id);
     }
 };
 exports.StockMovementsController = StockMovementsController;
@@ -43,20 +53,29 @@ __decorate([
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_stock_movement_dto_1.CreateStockMovementDto]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], StockMovementsController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
+    __param(0, (0, common_1.Query)('page')),
+    __param(1, (0, common_1.Query)('limit')),
+    __param(2, (0, common_1.Query)('type')),
+    __param(3, (0, common_1.Query)('reason')),
+    __param(4, (0, common_1.Query)('variantId')),
+    __param(5, (0, common_1.Query)('supplierId')),
+    __param(6, (0, common_1.Query)('userId')),
+    __param(7, (0, common_1.Query)('startDate')),
+    __param(8, (0, common_1.Query)('endDate')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", void 0)
+    __metadata("design:paramtypes", [Number, Number, String, String, String, String, String, String, String]),
+    __metadata("design:returntype", Promise)
 ], StockMovementsController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], StockMovementsController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Patch)(':id'),
@@ -64,14 +83,14 @@ __decorate([
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, update_stock_movement_dto_1.UpdateStockMovementDto]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], StockMovementsController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], StockMovementsController.prototype, "remove", null);
 exports.StockMovementsController = StockMovementsController = __decorate([
     (0, common_1.Controller)('stock-movements'),

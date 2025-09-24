@@ -14,6 +14,7 @@ const stock_movement_entity_1 = require("./entities/stock-movement.entity");
 const stock_entity_1 = require("../stock/entities/stock.entity");
 const variant_entity_1 = require("../products/entities/variant.entity");
 const database_module_1 = require("../../core/database/database.module");
+const stock_movement_repository_1 = require("./repositories/stock-movement.repository");
 let StockMovementsModule = class StockMovementsModule {
 };
 exports.StockMovementsModule = StockMovementsModule;
@@ -21,7 +22,7 @@ exports.StockMovementsModule = StockMovementsModule = __decorate([
     (0, common_1.Module)({
         imports: [database_module_1.DatabaseModule.forFeature([stock_movement_entity_1.StockMovement, stock_entity_1.Stock, variant_entity_1.Variant])],
         controllers: [stock_movements_controller_1.StockMovementsController],
-        providers: [stock_movements_service_1.StockMovementsService],
+        providers: [stock_movements_service_1.StockMovementsService, stock_movement_repository_1.StockMovementRepository],
     })
 ], StockMovementsModule);
 //# sourceMappingURL=stock-movements.module.js.map

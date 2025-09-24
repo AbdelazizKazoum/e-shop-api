@@ -35,7 +35,7 @@ export class StockMovement {
 
   @Column({
     type: 'enum',
-    enum: StockMovementReason,
+    enum: StockMovementReason,  
     default: StockMovementReason.MANUAL_ADJUSTMENT,
   })
   reason: StockMovementReason;

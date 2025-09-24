@@ -1,10 +1,11 @@
 import {
   Controller,
-  Get,
   Post,
   Body,
-  Patch,
+  Get,
+  Query,
   Param,
+  Patch,
   Delete,
 } from '@nestjs/common';
 import { StockMovementsService } from './stock-movements.service';
@@ -16,30 +17,50 @@ export class StockMovementsController {
   constructor(private readonly stockMovementsService: StockMovementsService) {}
 
   @Post()
-  create(@Body() createStockMovementDto: CreateStockMovementDto) {
+  async create(@Body() createStockMovementDto: CreateStockMovementDto) {
     return this.stockMovementsService.create(createStockMovementDto);
   }
 
   @Get()
-  findAll() {
-    return this.stockMovementsService.findAll();
+  async findAll(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('type') type?: string,
+    @Query('reason') reason?: string,
+    @Query('variantId') variantId?: string,
+    @Query('supplierId') supplierId?: string,
+    @Query('userId') userId?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.stockMovementsService.findAll({
+      page,
+      limit,
+      type,
+      reason,
+      variantId,
+      supplierId,
+      userId,
+      startDate,
+      endDate,
+    });
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.stockMovementsService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    return this.stockMovementsService.findOne(id);
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateStockMovementDto: UpdateStockMovementDto,
   ) {
-    return this.stockMovementsService.update(+id, updateStockMovementDto);
+    return this.stockMovementsService.update(id, updateStockMovementDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.stockMovementsService.remove(+id);
+  async remove(@Param('id') id: string) {
+    return this.stockMovementsService.remove(id);
   }
 }
