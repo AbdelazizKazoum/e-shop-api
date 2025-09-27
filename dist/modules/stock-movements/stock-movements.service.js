@@ -12,20 +12,52 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.StockMovementsService = void 0;
 const common_1 = require("@nestjs/common");
 const stock_movement_repository_1 = require("./repositories/stock-movement.repository");
+const typeorm_1 = require("typeorm");
+const stock_movement_type_enum_1 = require("./types/stock-movement-type.enum");
+const stock_entity_1 = require("../stock/entities/stock.entity");
+const stock_movement_entity_1 = require("./entities/stock-movement.entity");
 let StockMovementsService = class StockMovementsService {
-    constructor(stockMovementRepository) {
+    constructor(stockMovementRepository, dataSource) {
         this.stockMovementRepository = stockMovementRepository;
+        this.dataSource = dataSource;
     }
     async create(createStockMovementDto) {
-        return await this.stockMovementRepository.create({
-            ...createStockMovementDto,
-            productDetail: { id: createStockMovementDto.variantId },
-            supplier: createStockMovementDto.supplierId
-                ? { id: createStockMovementDto.supplierId }
-                : null,
-            supplierOrder: createStockMovementDto.supplierOrderId
-                ? { id: createStockMovementDto.supplierOrderId }
-                : null,
+        const { variantId, type, quantity } = createStockMovementDto;
+        return this.dataSource.transaction(async (manager) => {
+            const stock = await manager.findOne(stock_entity_1.Stock, {
+                where: { variant: { id: variantId } },
+            });
+            if (!stock) {
+                throw new common_1.NotFoundException(`Stock for variant with ID "${variantId}" not found.`);
+            }
+            switch (type) {
+                case stock_movement_type_enum_1.StockMovementType.ADD:
+                    stock.quantity += quantity;
+                    break;
+                case stock_movement_type_enum_1.StockMovementType.REMOVE:
+                    if (stock.quantity < quantity) {
+                        throw new common_1.BadRequestException(`Insufficient stock. Available: ${stock.quantity}, Requested to remove: ${quantity}`);
+                    }
+                    stock.quantity -= quantity;
+                    break;
+                case stock_movement_type_enum_1.StockMovementType.CORRECTION:
+                    stock.quantity = quantity;
+                    break;
+                default:
+                    throw new common_1.BadRequestException(`Invalid stock movement type: ${type}`);
+            }
+            await manager.save(stock);
+            const movement = manager.create(stock_movement_entity_1.StockMovement, {
+                ...createStockMovementDto,
+                productDetail: { id: createStockMovementDto.variantId },
+                supplier: createStockMovementDto.supplierId
+                    ? { id: createStockMovementDto.supplierId }
+                    : null,
+                supplierOrder: createStockMovementDto.supplierOrderId
+                    ? { id: createStockMovementDto.supplierOrderId }
+                    : null,
+            });
+            return manager.save(movement);
         });
     }
     async findAll(query) {
@@ -88,6 +120,7 @@ let StockMovementsService = class StockMovementsService {
 exports.StockMovementsService = StockMovementsService;
 exports.StockMovementsService = StockMovementsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [stock_movement_repository_1.StockMovementRepository])
+    __metadata("design:paramtypes", [stock_movement_repository_1.StockMovementRepository,
+        typeorm_1.DataSource])
 ], StockMovementsService);
 //# sourceMappingURL=stock-movements.service.js.map

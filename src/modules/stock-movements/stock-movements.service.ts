@@ -1,24 +1,73 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { CreateStockMovementDto } from './dto/create-stock-movement.dto';
 import { UpdateStockMovementDto } from './dto/update-stock-movement.dto';
 import { StockMovementRepository } from './repositories/stock-movement.repository';
+import { DataSource } from 'typeorm';
+import { StockMovementType } from './types/stock-movement-type.enum';
+import { Stock } from '../stock/entities/stock.entity';
+import { StockMovement } from './entities/stock-movement.entity';
 
 @Injectable()
 export class StockMovementsService {
   constructor(
     private readonly stockMovementRepository: StockMovementRepository,
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(createStockMovementDto: CreateStockMovementDto) {
-    return await this.stockMovementRepository.create({
-      ...createStockMovementDto,
-      productDetail: { id: createStockMovementDto.variantId },
-      supplier: createStockMovementDto.supplierId
-        ? { id: createStockMovementDto.supplierId }
-        : null,
-      supplierOrder: createStockMovementDto.supplierOrderId
-        ? { id: createStockMovementDto.supplierOrderId }
-        : null,
+    const { variantId, type, quantity } = createStockMovementDto;
+
+    return this.dataSource.transaction(async (manager) => {
+      // 1. Find the stock for the variant
+      const stock = await manager.findOne(Stock, {
+        where: { variant: { id: variantId } },
+      });
+
+      if (!stock) {
+        throw new NotFoundException(
+          `Stock for variant with ID "${variantId}" not found.`,
+        );
+      }
+
+      // 2. Update stock quantity based on movement type
+      switch (type) {
+        case StockMovementType.ADD:
+          stock.quantity += quantity;
+          break;
+        case StockMovementType.REMOVE:
+          if (stock.quantity < quantity) {
+            throw new BadRequestException(
+              `Insufficient stock. Available: ${stock.quantity}, Requested to remove: ${quantity}`,
+            );
+          }
+          stock.quantity -= quantity;
+          break;
+        case StockMovementType.CORRECTION:
+          stock.quantity = quantity;
+          break;
+        default:
+          throw new BadRequestException(`Invalid stock movement type: ${type}`);
+      }
+
+      await manager.save(stock);
+
+      // 3. Create and save the stock movement record
+      const movement = manager.create(StockMovement, {
+        ...createStockMovementDto,
+        productDetail: { id: createStockMovementDto.variantId },
+        supplier: createStockMovementDto.supplierId
+          ? { id: createStockMovementDto.supplierId }
+          : null,
+        supplierOrder: createStockMovementDto.supplierOrderId
+          ? { id: createStockMovementDto.supplierOrderId }
+          : null,
+      });
+
+      return manager.save(movement);
     });
   }
 
@@ -99,6 +148,8 @@ export class StockMovementsService {
   async update(id: string, updateStockMovementDto: UpdateStockMovementDto) {
     const movement = await this.stockMovementRepository.findOne({ id });
     if (!movement) throw new NotFoundException('Stock movement not found');
+    // Note: Updating a movement does not automatically revert/change stock.
+    // This would require more complex logic.
     return this.stockMovementRepository.findOneAndUpdate(
       { id },
       updateStockMovementDto,
@@ -106,6 +157,8 @@ export class StockMovementsService {
   }
 
   async remove(id: string) {
+    // Note: Deleting a movement does not automatically revert stock changes.
+    // This would require more complex logic.
     await this.stockMovementRepository.findOneAndDelete({ id });
     return { message: 'Stock movement deleted successfully' };
   }
