@@ -17,7 +17,7 @@ let StockMovementsService = class StockMovementsService {
         this.stockMovementRepository = stockMovementRepository;
     }
     async create(createStockMovementDto) {
-        return this.stockMovementRepository.create({
+        return await this.stockMovementRepository.create({
             ...createStockMovementDto,
             productDetail: { id: createStockMovementDto.variantId },
             supplier: createStockMovementDto.supplierId
@@ -50,7 +50,13 @@ let StockMovementsService = class StockMovementsService {
         }
         const [data, total] = await this.stockMovementRepository.findAndCountWithPagination({
             where,
-            relations: ['productDetail', 'supplier', 'supplierOrder', 'user'],
+            relations: [
+                'productDetail',
+                'supplier',
+                'supplierOrder',
+                'user',
+                'productDetail.product',
+            ],
             order: { createdAt: 'DESC' },
             skip: (page - 1) * limit,
             take: limit,

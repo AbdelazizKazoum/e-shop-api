@@ -10,7 +10,7 @@ export class StockMovementsService {
   ) {}
 
   async create(createStockMovementDto: CreateStockMovementDto) {
-    return this.stockMovementRepository.create({
+    return await this.stockMovementRepository.create({
       ...createStockMovementDto,
       productDetail: { id: createStockMovementDto.variantId },
       supplier: createStockMovementDto.supplierId
@@ -67,7 +67,13 @@ export class StockMovementsService {
     const [data, total] =
       await this.stockMovementRepository.findAndCountWithPagination({
         where,
-        relations: ['productDetail', 'supplier', 'supplierOrder', 'user'],
+        relations: [
+          'productDetail',
+          'supplier',
+          'supplierOrder',
+          'user',
+          'productDetail.product',
+        ],
         order: { createdAt: 'DESC' },
         skip: (page - 1) * limit,
         take: limit,
